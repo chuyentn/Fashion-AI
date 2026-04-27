@@ -1,88 +1,103 @@
-# 🔐 Fix Supabase OAuth Redirect Issue
+# 🔐 OAuth Redirect Configuration
 
-## Problem
-After login, you're redirected to: `https://fashion-ai-zeta.vercel.app/` instead of your deployment URL.
+## Current Setup
+App is now deployed to **Firebase Hosting** and **Cloudflare Pages**.
 
-## Root Cause
-Supabase OAuth is configured to only redirect to the original repository's domain.
+## Firebase Hosting URLs
+- **https://fashionstudio-app.web.app/**
+- **https://fashionstudio-app.firebaseapp.com/**
 
-## ✅ Solution: Update Supabase Redirect URLs
+## Root Cause of Old Issues
+Previous configuration pointed to old Vercel deployment `https://fashion-ai-zeta.vercel.app/`.
 
-### Step 1: Access Supabase Dashboard
+## ✅ Solution: Update Supabase & Firebase Redirect URLs
+
+### Step 1: Update Supabase OAuth (if still using Supabase)
 1. Go to: https://app.supabase.com/
-2. Sign in with your account
-3. Select project: **xlrarbcrcofcfzzkfotk**
-
-### Step 2: Add Authorized Redirect URLs
-1. Navigate to: **Settings > Auth > URL Configuration**
-2. Find **Redirect URLs** section
-3. Click **Add URL** and add these URLs:
+2. Select project: **xlrarbcrcofcfzzkfotk**
+3. Navigate to: **Settings > Auth > URL Configuration**
+4. Add these Redirect URLs:
 
 ```
 http://localhost:3000
 http://localhost:3000/auth/callback
+https://fashionstudio-app.web.app
+https://fashionstudio-app.web.app/auth/callback
+https://fashionstudio-app.firebaseapp.com
+https://fashionstudio-app.firebaseapp.com/auth/callback
+https://fashion.breaths.live
+https://fashion.breaths.live/auth/callback
 https://fashion-ai.pages.dev
 https://fashion-ai.pages.dev/auth/callback
 ```
 
-**If you have a custom domain, also add:**
-```
-https://your-custom-domain.com
-https://your-custom-domain.com/auth/callback
-```
+5. Click **Save**
 
-4. Click **Save**
+### Step 2: Firebase Authentication Setup
+1. Go to: https://console.firebase.google.com/project/fashionstudio-app
+2. Select: **Authentication > Settings**
+3. Authorized Domains already includes:
+   - ✅ `fashionstudio-app.web.app`
+   - ✅ `fashionstudio-app.firebaseapp.com`
+   - ✅ `localhost` (for dev)
 
-### Step 3: Verify Google OAuth Setup
-1. In Supabase dashboard > **Auth > Providers**
-2. Check if **Google** is enabled
-3. Verify the OAuth credentials are correct
+### Step 3: Setup Google OAuth
+1. Go to: https://console.cloud.google.com/
+2. Create/Select project and enable Google+ API
+3. Add OAuth Credentials (Web Application)
+4. Redirect URIs should include all the URLs from Step 1
+5. Copy Client ID and Client Secret to Firebase Console
 
-### Step 4: Test Locally
-```bash
+### Step 4: Add Google OAuth to Firebase
+1. Firebase Console > **Authentication > Sign-in method**
+2. Enable **Google**
+3. Copy OAuth credentials from Google Cloud Console
+4. Add custom domain if using `fashion.breaths.live`
+
+### Step 5: Test Locally
+```powershell
 npm run dev
+# Open: http://localhost:3000
+# Try: Sign in with Google
+# Should redirect back to localhost after auth
 ```
-- Go to: http://localhost:3000
-- Try login with Google
-- Should work and stay on localhost
 
-### Step 5: Deploy to Cloudflare Pages
-```bash
+### Step 6: Deploy
+```powershell
 npm run build
-# Deploy dist/ folder to Cloudflare Pages
+# Deploy to Firebase Hosting:
+firebase deploy --project fashionstudio-app
+
+# Or deploy to Cloudflare Pages via GitHub
 ```
 
-## 🆘 If Still Having Issues
+## ✅ Deployment URLs
 
-### Check Browser Console (F12)
-- Auth errors appear in console
-- Check for CORS or redirect URI mismatch
+| Platform | URL |
+|----------|-----|
+| **Firebase Hosting** | https://fashionstudio-app.web.app |
+| **Firebase Alt** | https://fashionstudio-app.firebaseapp.com |
+| **Cloudflare Pages** | https://fashion-ai.pages.dev |
+| **Custom Domain** | https://fashion.breaths.live |
 
-### Verify Redirect URL Format
-- Must include full URL: `https://domain.com`
-- Not just `domain.com`
-- Include `/auth/callback` path for callback-based flows
+## 🔧 Troubleshooting
 
-### Clear Cookies
-1. Open DevTools (F12)
-2. Application > Cookies
-3. Delete all cookies for the domain
-4. Reload and try again
+### Login redirect issues
+- Clear browser cookies: `F12 > Application > Cookies > Delete all`
+- Verify redirect URLs in Firebase Console
+- Check browser console for error messages
 
-### Create New Supabase Project (Last Resort)
-If issues persist, create a fresh Supabase project configured specifically for your deployment.
+### CORS Errors
+- Firebase handles CORS automatically for authorized domains
+- Ensure domain is added in Firebase > Authentication > Settings
 
-## Environment Variables (Optional)
-
-If you need to use a different Supabase project, add to `.env.local`:
-
+### Test with localhost
+```powershell
+npm run dev
+# Your app runs at: http://localhost:3000
+# Firebase allows localhost by default
 ```
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your_anon_key
-```
-
-The app will use these instead of defaults.
 
 ---
 
-**Need help?** Check Supabase Auth troubleshooting: https://supabase.com/docs/guides/auth
+**Documentation**: https://firebase.google.com/docs/auth/web

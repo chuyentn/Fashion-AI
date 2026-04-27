@@ -1,7 +1,7 @@
 {
-  "name": "backup-2-ok---pc/mobile-of-fashion-studio-ai-(supabase)",
+  "name": "fashion-studio-ai",
   "private": true,
-  "version": "0.0.0",
+  "version": "3.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

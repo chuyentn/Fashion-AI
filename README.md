@@ -1,49 +1,98 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+<img width="1200" height="475" alt="Fashion Studio AI" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# 🎨 Fashion Studio AI - Product Shot Generation
 
-This contains everything you need to run your app locally.
+AI-powered fashion photography app. Upload any garment and generate professional product shots in multiple styles and poses.
 
-View your app in AI Studio: https://ai.studio/apps/5395799a-83f0-443a-a0d2-a971053c06ef
+## 🚀 Live Deployments
 
-## Run Locally
+- **Firebase Hosting**: https://fashionstudio-app.web.app
+- **Custom Domain**: https://fashion.breaths.live
+- **GitHub**: https://github.com/chuyentn/Fashion-AI
 
-**Prerequisites:**  Node.js 18+
+## ✨ Features
 
-1. Install dependencies:
+- ✅ Google Sign-In & Email Auth
+- ✅ AI-powered image generation (Gemini + OpenAI)
+- ✅ Pose preservation (99% accuracy)
+- ✅ Product detection & auto-extraction
+- ✅ Face hiding options (pixelate, back view, phone)
+- ✅ Text overlay with custom fonts
+- ✅ Design history & resource library
+- ✅ Cloud storage (Firebase + Supabase)
+
+## 🛠️ Run Locally
+
+**Prerequisites**: Node.js 18+, npm 9+
+
+1. **Install dependencies**:
    ```bash
    npm install
    ```
 
-2. Create `.env.local` file from `.env.example`:
+2. **Setup environment**:
    ```bash
    cp .env.example .env.local
    ```
+   
+   Add your API keys to `.env.local`:
+   ```env
+   VITE_GEMINI_API_KEY=your_gemini_key_here
+   VITE_API_KEY=sk-proj-your-openai-key-here
+   ```
 
-3. Get your Gemini API key from: https://aistudio.google.com/app/apikey
-   - Copy to `.env.local`: `VITE_GEMINI_API_KEY=your_key_here`
-
-4. Run the app:
+3. **Run development server**:
    ```bash
    npm run dev
    ```
-   - Open: http://localhost:3000
+   
+   Open: http://localhost:3000
 
 ## 🧪 Testing
 
 ```bash
-# Run tests
+# Run unit tests
 npm test
 
-# Run tests in UI mode
+# Run with UI dashboard
 npm test:ui
 
 # Generate coverage report
 npm test:coverage
+
+# Run linting
+npm lint
 ```
 
-## 📤 Deploy to Cloudflare Pages
+## 📦 Build for Production
 
-See [DEPLOYMENT.md](DEPLOYMENT.md) for complete deployment guide.
+```bash
+npm run build
+# Output: dist/ folder (ready for deployment)
+```
+
+## 🚀 Deploy
+
+### Option 1: Firebase Hosting (Recommended)
+
+```bash
+npm run build
+firebase deploy --project fashionstudio-app
+```
+
+Live at: https://fashionstudio-app.web.app
+
+### Option 2: Cloudflare Pages
+
+Push to GitHub, Cloudflare auto-deploys on every push.
+
+See [GITHUB_CLOUDFLARE.md](GITHUB_CLOUDFLARE.md) for details.
+
+## 🔧 Configuration
+
+- **Firebase**: [FIREBASE_SETUP.md](FIREBASE_SETUP.md)
+- **Deployment**: [DEPLOYMENT.md](DEPLOYMENT.md)
+- **Cloudflare**: [GITHUB_CLOUDFLARE.md](GITHUB_CLOUDFLARE.md)
+- **OAuth/Auth**: [OAUTH_FIX.md](OAUTH_FIX.md)
