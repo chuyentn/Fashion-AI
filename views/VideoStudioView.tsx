@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { Header } from '../components/Common';
-import { AppState, VideoClip } from '../types';
+import { AppState, VideoClip, VideoStructuredPrompt } from '../types';
 import { generateFashionVideo } from '../services/veoService';
 import { fileToBase64 } from '../services/geminiService';
 
@@ -9,6 +9,16 @@ export const VideoStudioView = ({ state, updateState, apiSettings }: { state: Ap
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const [advancedSettings, setAdvancedSettings] = useState<VideoStructuredPrompt>({
+    scenePrompt: 'Model walking gracefully on a high-end fashion runway',
+    cameraAngle: 'Default',
+    transition: 'None',
+    speed: 'Normal',
+    effects: 'None',
+    voice: ''
+  });
+  const [showSettings, setShowSettings] = useState(false);
 
   const addClip = async (files: FileList | null) => {
     if (!files) return;
@@ -26,7 +36,9 @@ export const VideoStudioView = ({ state, updateState, apiSettings }: { state: Ap
       const response = await fetch(clip.sourceImage);
       const blob = await response.blob();
       const base64 = await fileToBase64(blob);
-      const result = await generateFashionVideo(base64, blob.type, "Fashion Show", apiSettings);
+      const result = await generateFashionVideo(base64, blob.type, apiSettings, {
+        structuredPrompt: advancedSettings
+      });
       
       setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'done', videoUrl: result?.url || '' } : c));
     } catch (err) {
@@ -63,7 +75,120 @@ export const VideoStudioView = ({ state, updateState, apiSettings }: { state: Ap
                <p className="text-sm text-gray-500 mt-2">Kéo thả hoặc click để chọn ảnh thời trang</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <>
+              {/* Advanced Settings Panel */}
+              <div className="bg-white dark:bg-surface-card rounded-[32px] p-6 border border-gray-100 dark:border-white/5 shadow-sm">
+                <div 
+                  className="flex items-center justify-between cursor-pointer"
+                  onClick={() => setShowSettings(!showSettings)}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-pink-500/10 text-pink-500 flex items-center justify-center">
+                      <span className="material-symbols-outlined">tune</span>
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-black dark:text-white">Cấu hình Đạo diễn (Advanced)</h3>
+                      <p className="text-xs text-gray-500">Tùy chỉnh góc máy, hiệu ứng, chuyển cảnh chuyên sâu</p>
+                    </div>
+                  </div>
+                  <span className="material-symbols-outlined text-gray-400">
+                    {showSettings ? 'expand_less' : 'expand_more'}
+                  </span>
+                </div>
+                
+                {showSettings && (
+                  <div className="mt-6 pt-6 border-t border-gray-100 dark:border-white/10 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="col-span-1 md:col-span-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Câu lệnh / Kịch bản</label>
+                      <textarea 
+                        value={advancedSettings.scenePrompt}
+                        onChange={(e) => setAdvancedSettings({...advancedSettings, scenePrompt: e.target.value})}
+                        className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm dark:text-white focus:ring-2 focus:ring-pink-500 outline-none resize-none"
+                        rows={3}
+                        placeholder="Mô tả hành động, bối cảnh, trang phục..."
+                      />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Góc máy (Camera Angle)</label>
+                      <select 
+                        value={advancedSettings.cameraAngle}
+                        onChange={(e) => setAdvancedSettings({...advancedSettings, cameraAngle: e.target.value})}
+                        className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm dark:text-white focus:ring-2 focus:ring-pink-500 outline-none appearance-none"
+                      >
+                        <option value="Default">Mặc định (AI tự chọn)</option>
+                        <option value="Close-up shot">Cận cảnh (Close-up)</option>
+                        <option value="Wide shot">Toàn cảnh (Wide shot)</option>
+                        <option value="Low angle">Từ dưới lên (Low angle)</option>
+                        <option value="High angle">Từ trên xuống (High angle)</option>
+                        <option value="Drone shot">Góc Flycam (Drone shot)</option>
+                        <option value="Tracking shot">Tracking shot (Theo dõi)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tốc độ (Speed)</label>
+                      <select 
+                        value={advancedSettings.speed}
+                        onChange={(e) => setAdvancedSettings({...advancedSettings, speed: e.target.value})}
+                        className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm dark:text-white focus:ring-2 focus:ring-pink-500 outline-none appearance-none"
+                      >
+                        <option value="Normal">Bình thường (Normal)</option>
+                        <option value="Slow Motion">Quay chậm (Slow Motion)</option>
+                        <option value="Fast Motion">Tua nhanh (Fast Motion)</option>
+                        <option value="Timelapse">Timelapse</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Hiệu ứng (Effects)</label>
+                      <select 
+                        value={advancedSettings.effects}
+                        onChange={(e) => setAdvancedSettings({...advancedSettings, effects: e.target.value})}
+                        className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm dark:text-white focus:ring-2 focus:ring-pink-500 outline-none appearance-none"
+                      >
+                        <option value="None">Không có</option>
+                        <option value="Cinematic Lighting">Ánh sáng điện ảnh (Cinematic)</option>
+                        <option value="Vintage Film">Phim cổ điển (Vintage)</option>
+                        <option value="Cyberpunk">Cyberpunk Neon</option>
+                        <option value="Dreamy Soft Focus">Mơ màng (Dreamy)</option>
+                        <option value="Studio Lighting">Ánh sáng Studio</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Chuyển cảnh (Transition)</label>
+                      <select 
+                        value={advancedSettings.transition}
+                        onChange={(e) => setAdvancedSettings({...advancedSettings, transition: e.target.value})}
+                        className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm dark:text-white focus:ring-2 focus:ring-pink-500 outline-none appearance-none"
+                      >
+                        <option value="None">Không có (Cắt cảnh tự nhiên)</option>
+                        <option value="Fade in">Sáng dần (Fade in)</option>
+                        <option value="Fade out">Tối dần (Fade out)</option>
+                        <option value="Zoom in">Zoom cận cảnh (Zoom in)</option>
+                        <option value="Pan left">Quay trái (Pan left)</option>
+                        <option value="Pan right">Quay phải (Pan right)</option>
+                      </select>
+                    </div>
+
+                    <div className="col-span-1 md:col-span-2">
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Ngữ cảnh Âm thanh / Thoại (Voice)</label>
+                      <input 
+                        type="text"
+                        value={advancedSettings.voice}
+                        onChange={(e) => setAdvancedSettings({...advancedSettings, voice: e.target.value})}
+                        className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl p-4 text-sm dark:text-white focus:ring-2 focus:ring-pink-500 outline-none"
+                        placeholder="VD: Người mẫu đang nói 'Xin chào', tiếng nhạc điện tử sôi động..."
+                      />
+                      <p className="text-xs text-gray-400 mt-2">* Thông tin này giúp AI hiểu ngữ cảnh khẩu hình miệng hoặc không khí video.</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Clips Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {clips.map((clip) => (
                 <div key={clip.id} className="group bg-white dark:bg-surface-card rounded-[32px] overflow-hidden border border-gray-100 dark:border-white/5 shadow-sm hover:shadow-xl transition-all">
                   <div className="aspect-square relative">
@@ -106,6 +231,7 @@ export const VideoStudioView = ({ state, updateState, apiSettings }: { state: Ap
                 </div>
               ))}
             </div>
+            </>
           )}
         </div>
       </div>

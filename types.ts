@@ -114,22 +114,12 @@ export interface VideoClip {
 }
 
 export interface VideoStructuredPrompt {
-  scene: string;
-  character: {
-    action: string;
-    expression?: string;
-  };
-  camera: string;
-  voice?: {
-    accent?: string;
-    dialogue?: string;
-  };
-  backgroundAudio?: {
-    musicStyle?: string;
-  };
-  negativePrompt?: string;
-  durationSeconds: string;
-  quality: string;
+  scenePrompt: string;
+  cameraAngle: string;
+  transition: string;
+  speed: string;
+  effects: string;
+  voice: string;
 }
 
 export interface VideoStoryboard {

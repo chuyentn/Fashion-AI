@@ -1,5 +1,6 @@
 import { GoogleGenAI } from '@google/genai';
 import { getVeoModel, AuthMode, DEFAULT_API_BASE_URL, hasValidAuth } from './apiSettings';
+import { VideoStructuredPrompt } from '../types';
 
 export interface VideoGenerationConfig {
   prompt: string;
@@ -120,12 +121,32 @@ export async function generateVideo(
 export async function generateFashionVideo(
   imageBase64: string,
   imageMimeType: string,
-  description: string,
   apiSettings: any,
+  options: {
+    description?: string;
+    structuredPrompt?: VideoStructuredPrompt;
+  } = {},
   onProgress?: (status: string) => void
 ): Promise<GeneratedVideo | null> {
+  
+  let finalPrompt = '';
+
+  if (options.structuredPrompt) {
+    const sp = options.structuredPrompt;
+    finalPrompt = `Professional high-quality fashion video. `;
+    if (sp.scenePrompt) finalPrompt += `${sp.scenePrompt}. `;
+    if (sp.cameraAngle && sp.cameraAngle !== 'Default') finalPrompt += `Camera angle: ${sp.cameraAngle}. `;
+    if (sp.speed && sp.speed !== 'Normal') finalPrompt += `Video speed: ${sp.speed}. `;
+    if (sp.effects && sp.effects !== 'None') finalPrompt += `Visual effects: ${sp.effects}. `;
+    if (sp.transition && sp.transition !== 'None') finalPrompt += `Scene transition: ${sp.transition}. `;
+    if (sp.voice) finalPrompt += `Context for dialogue/audio: ${sp.voice}. `;
+    finalPrompt += `Cinematic lighting, hyper-realistic, 8k resolution.`;
+  } else {
+    finalPrompt = `Professional fashion video. ${options.description || 'Fashion Show'}. Model walking on runway, cinematic lighting.`;
+  }
+
   return generateVideo({
-    prompt: `Professional fashion video. ${description}. Model walking on runway, cinematic lighting.`,
+    prompt: finalPrompt,
     apiSettings,
     aspectRatio: '9:16',
     resolution: '1080p',
