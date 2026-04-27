@@ -81,7 +81,7 @@ export const ensureProfileExists = async (userId: string, email: string, fullNam
         email,
         name: fullName,
         avatar: `https://i.pravatar.cc/150?u=${email}`,
-        isAdmin: email === 'huuson9x@gmail.com',
+        isAdmin: email === 'thonganhkiet125@gmail.com',
         preferences: {
           darkMode: false,
           language: 'Vietnamese',

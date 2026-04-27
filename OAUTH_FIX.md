@@ -1,60 +1,39 @@
 # 🔐 OAuth Redirect Configuration
 
 ## Current Setup
-App is now deployed to **Firebase Hosting** and **Cloudflare Pages**.
+App uses **Supabase Auth** for authentication.
 
-## Firebase Hosting URLs
-- **https://fashionstudio-app.web.app/**
-- **https://fashionstudio-app.firebaseapp.com/**
+## ✅ Supabase Auth Configuration
 
-## Root Cause of Old Issues
-Previous configuration pointed to old Vercel deployment `https://fashion-ai-zeta.vercel.app/`.
-
-## ✅ Solution: Update Supabase & Firebase Redirect URLs
-
-### Step 1: Update Supabase OAuth (if still using Supabase)
-1. Go to: https://app.supabase.com/
-2. Select project: **xlrarbcrcofcfzzkfotk**
-3. Navigate to: **Settings > Auth > URL Configuration**
-4. Add these Redirect URLs:
+### Step 1: Update Supabase OAuth Redirect URLs
+1. Go to: https://supabase.com/dashboard/project/csesonwxvgvkozfbtpvb
+2. Navigate to: **Authentication > URL Configuration**
+3. Set **Site URL**: `https://YOUR_DOMAIN_HERE`
+4. Add these **Redirect URLs**:
 
 ```
 http://localhost:3000
 http://localhost:3000/auth/callback
-https://fashionstudio-app.web.app
-https://fashionstudio-app.web.app/auth/callback
-https://fashionstudio-app.firebaseapp.com
-https://fashionstudio-app.firebaseapp.com/auth/callback
-https://fashion.breaths.live
-https://fashion.breaths.live/auth/callback
-https://fashion-ai.pages.dev
-https://fashion-ai.pages.dev/auth/callback
+https://YOUR_CLOUDFLARE_PAGES_URL
+https://YOUR_CLOUDFLARE_PAGES_URL/auth/callback
 ```
 
 5. Click **Save**
 
-### Step 2: Firebase Authentication Setup
-1. Go to: https://console.firebase.google.com/project/fashionstudio-app
-2. Select: **Authentication > Settings**
-3. Authorized Domains already includes:
-   - ✅ `fashionstudio-app.web.app`
-   - ✅ `fashionstudio-app.firebaseapp.com`
-   - ✅ `localhost` (for dev)
+### Step 2: Enable Auth Providers
+1. Go to: **Authentication > Providers**
+2. Enable:
+   - ✅ **Email** - Toggle ON
+   - ✅ **Google** - Configure with Google Cloud OAuth credentials
 
-### Step 3: Setup Google OAuth
+### Step 3: Google OAuth Setup
 1. Go to: https://console.cloud.google.com/
 2. Create/Select project and enable Google+ API
 3. Add OAuth Credentials (Web Application)
 4. Redirect URIs should include all the URLs from Step 1
-5. Copy Client ID and Client Secret to Firebase Console
+5. Copy Client ID and Client Secret to Supabase Auth > Google provider
 
-### Step 4: Add Google OAuth to Firebase
-1. Firebase Console > **Authentication > Sign-in method**
-2. Enable **Google**
-3. Copy OAuth credentials from Google Cloud Console
-4. Add custom domain if using `fashion.breaths.live`
-
-### Step 5: Test Locally
+### Step 4: Test Locally
 ```powershell
 npm run dev
 # Open: http://localhost:3000
@@ -62,42 +41,29 @@ npm run dev
 # Should redirect back to localhost after auth
 ```
 
-### Step 6: Deploy
+### Step 5: Deploy
 ```powershell
 npm run build
-# Deploy to Firebase Hosting:
-firebase deploy --project fashionstudio-app
-
-# Or deploy to Cloudflare Pages via GitHub
+# Deploy to Cloudflare Pages via GitHub
 ```
-
-## ✅ Deployment URLs
-
-| Platform | URL |
-|----------|-----|
-| **Firebase Hosting** | https://fashionstudio-app.web.app |
-| **Firebase Alt** | https://fashionstudio-app.firebaseapp.com |
-| **Cloudflare Pages** | https://fashion-ai.pages.dev |
-| **Custom Domain** | https://fashion.breaths.live |
 
 ## 🔧 Troubleshooting
 
 ### Login redirect issues
 - Clear browser cookies: `F12 > Application > Cookies > Delete all`
-- Verify redirect URLs in Firebase Console
+- Verify redirect URLs in Supabase Dashboard
 - Check browser console for error messages
 
 ### CORS Errors
-- Firebase handles CORS automatically for authorized domains
-- Ensure domain is added in Firebase > Authentication > Settings
+- Ensure domain is added in Supabase Auth > URL Configuration
 
 ### Test with localhost
 ```powershell
 npm run dev
 # Your app runs at: http://localhost:3000
-# Firebase allows localhost by default
+# Supabase allows localhost by default
 ```
 
 ---
 
-**Documentation**: https://firebase.google.com/docs/auth/web
+**Documentation**: https://supabase.com/docs/guides/auth

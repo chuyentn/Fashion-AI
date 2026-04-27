@@ -1,5 +1,5 @@
 {
-  "name": "Remix: SONNY DANG OK - Pc/Mobile of Fashion Studio AI (Supabase)",
+  "name": "Fashion Studio AI",
   "description": "Professional tool for fashion retailers to clone photography styles onto their products using Gemini AI.",
   "requestFramePermissions": [
     "clipboard-read"

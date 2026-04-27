@@ -9,7 +9,8 @@
 
 ### 2. **Supabase** (Đã configured)
 - ✅ Đã có credentials trong code
-- Supabase URL: `https://xlrarbcrcofcfzzkfotk.supabase.co`
+- Supabase URL: `https://csesonwxvgvkozfbtpvb.supabase.co`
+- Region: Asia-Pacific (Northeast Asia - Tokyo)
 
 ## 🚀 Local Development
 
@@ -73,7 +74,6 @@ git push -u origin main
 ## ✅ Verification
 
 Sau khi deploy:
-- Pages URL: `https://fashion-ai.pages.dev`
 - Test upload images
 - Test Gemini API calls
 - Test Supabase integration

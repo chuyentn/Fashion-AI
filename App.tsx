@@ -16,7 +16,7 @@ import { AppState, ImageFile, GeneratedImage, HistoryItem, FaceHideType, ModelTi
 import { generateFashionShots, generateExtractedProduct, detectImageObjects, fileToBase64 } from './services/geminiService';
 
 // --- CONSTANTS ---
-const ADMIN_EMAIL = 'huuson9x@gmail.com';
+const ADMIN_EMAIL = 'thonganhkiet125@gmail.com';
 const VERSION_HISTORY = [
   { version: '2.8.0', date: '02/03/2025', changes: ['Thêm tùy chọn tạo ảnh tổng hợp (Master Image)', 'Thêm nút lưu thủ công cho ảnh tách nền'] },
   { version: '2.7.0', date: '02/03/2025', changes: ['Nâng cấp Tách Đồ Áo: Tự động phát hiện vật thể & Tách nền trắng'] },

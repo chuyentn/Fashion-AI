@@ -3,8 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { HistoryItem, AppState, GeneratedImage, ImageFile, AdminResource } from '../types';
 
 // Use environment variables if provided, otherwise use defaults
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://xlrarbcrcofcfzzkfotk.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhscmFyYmNyY29mY2Z6emtmb3RrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjYzMzY5MzUsImV4cCI6MjA4MTkxMjkzNX0.aKjodhAxrTNcNBPV_iYR4_SC19q_x_qW4tXWPD_7pkk';
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://csesonwxvgvkozfbtpvb.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable__3ZzytlXTX-l5BOhAIzYiw_UlWZ6xOv';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     auth: {

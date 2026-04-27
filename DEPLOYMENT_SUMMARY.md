@@ -4,30 +4,7 @@
 
 | Item | Status | Details |
 |------|--------|---------|
-| **GitHub Repo** | ✅ Active | https://github.com/chuyentn/Fashion-AI |
-| **Firebase Hosting** | ✅ Ready | fashionstudio-app-service |
 | **Cloudflare Pages** | ⏳ Setup | Auto-deploy on git push |
-| **Custom Domain** | ⏳ Setup | fashion.breaths.live |
-
----
-
-## 🎯 Deployment URLs
-
-### Firebase Hosting (Primary)
-- **Main**: https://fashionstudio-app.web.app
-- **Alt**: https://fashionstudio-app.firebaseapp.com
-- **Region**: asia-southeast1
-- **Service**: fashionstudio-app-service
-
-### Cloudflare Pages (Alternative)
-- **URL**: https://fashion-ai.pages.dev
-- **Status**: Awaiting setup
-- **Trigger**: Auto-deploy on GitHub push
-
-### Custom Domain
-- **Domain**: fashion.breaths.live
-- **Status**: Awaiting Cloudflare configuration
-- **Point to**: Fashion-AI Cloudflare project
 
 ---
 
@@ -49,68 +26,42 @@ Model:      gpt-image-2
 Key:        sk-proj-... (in .env.local)
 ```
 
-### Firebase
+### Supabase
 ```
-Project:    fashionstudio-app
-Region:     asia-southeast1
-Auth:       ✅ Google Sign-In
-Database:   ✅ Firestore
-Storage:    ✅ Cloud Storage
-```
-
-### Supabase (Optional)
-```
-Project:    xlrarbcrcofcfzzkfotk
-Status:     Configured (backup)
-Tables:     user_profiles, project_history, admin_resources
+Project:    csesonwxvgvkozfbtpvb
+Region:     Asia-Pacific (Northeast Asia - Tokyo)
+URL:        https://csesonwxvgvkozfbtpvb.supabase.co
+Auth:       ✅ Supabase Auth (Google + Email)
+Database:   ✅ PostgreSQL
+Storage:    ✅ Supabase Storage
 ```
 
 ---
 
 ## 📋 Quick Deploy Steps
 
-### 1. Deploy to Firebase (Now)
-```powershell
-npm run build
-firebase deploy --project fashionstudio-app
-```
-
-Live at: https://fashionstudio-app.web.app
-
-### 2. Setup Cloudflare Pages (Optional)
+### Deploy to Cloudflare Pages
 ```
 Go to: https://dash.cloudflare.com/
 Pages → Create Project → Connect to Git
-Select: chuyentn/Fashion-AI
 Build: npm run build
 Output: dist/
 Environment: VITE_GEMINI_API_KEY & VITE_API_KEY
-```
-
-### 3. Setup Custom Domain
-```
-Cloudflare → Pages → Custom Domain
-Add: fashion.breaths.live
-Follow DNS setup
 ```
 
 ---
 
 ## 🔐 Authentication Setup
 
-### Firebase Authentication
+### Supabase Authentication
 - ✅ Google Sign-In (configured)
 - ✅ Email/Password (configured)
-- ✅ Authorized domains: localhost, fashionstudio-app.web.app
 
 ### OAuth Redirect URLs
-Update these in Firebase Console:
+Update these in Supabase Dashboard > Authentication > URL Configuration:
 ```
 http://localhost:3000
-https://fashionstudio-app.web.app
-https://fashionstudio-app.firebaseapp.com
-https://fashion.breaths.live
-https://fashion-ai.pages.dev
+https://YOUR_CLOUDFLARE_PAGES_URL
 ```
 
 ---
@@ -121,7 +72,8 @@ https://fashion-ai.pages.dev
 ```env
 VITE_GEMINI_API_KEY=your_gemini_key
 VITE_API_KEY=sk-proj-your-openai-key
-VITE_FIREBASE_API_KEY=AIzaSyCQQqTCftUhAHjnwR1sBAc5YCKCLgwVzlQ
+VITE_SUPABASE_URL=https://csesonwxvgvkozfbtpvb.supabase.co
+VITE_SUPABASE_ANON_KEY=sb_publishable__3ZzytlXTX-l5BOhAIzYiw_UlWZ6xOv
 ```
 
 ### Cloudflare Pages Settings
@@ -130,23 +82,13 @@ VITE_GEMINI_API_KEY=<your-key>
 VITE_API_KEY=sk-proj-<your-key>
 ```
 
-### Firebase Hosting
-- Automatically loads from codebase
-- No additional config needed
-
 ---
 
 ## ✅ Pre-Deployment Checklist
 
-- [x] Code pushed to GitHub
-- [x] OpenAI API key verified
-- [x] Gemini API key configured
-- [x] Firebase project ready
 - [ ] npm run build succeeds
 - [ ] Local testing complete
 - [ ] Supabase OAuth URLs updated
-- [ ] Firebase authorized domains updated
-- [ ] Custom domain DNS configured
 
 ---
 
@@ -180,7 +122,7 @@ npm run build
 ### Login Issues
 - Clear cookies: F12 > Application > Storage > Clear All
 - Check browser console for error messages
-- Verify Supabase/Firebase OAuth settings
+- Verify Supabase Auth settings
 
 ### API Key Errors
 - Check .env.local has correct keys
@@ -194,17 +136,5 @@ npm run build
 
 ---
 
-## 📞 Support
-
-| Issue | Solution |
-|-------|----------|
-| Build error | Run: `npm install && npm run build` |
-| Login fails | Update redirect URLs in Firebase Console |
-| API error | Verify keys in .env.local or Cloudflare settings |
-| Performance | Clear cache, restart dev server |
-
----
-
 **Last Updated**: April 27, 2026
-**Firebase Project**: fashionstudio-app
-**GitHub Repo**: chuyentn/Fashion-AI
+**Supabase Project**: csesonwxvgvkozfbtpvb

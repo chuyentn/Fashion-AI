@@ -28,7 +28,7 @@ https://github.com/YOUR_USERNAME/Fashion-AI.git
 Run in PowerShell:
 
 ```powershell
-cd d:\All Tool\Fashion-AI
+cd "d:\All Tool\Fashion-AI"
 
 # Initialize git (if not done)
 git init
@@ -37,7 +37,7 @@ git init
 git add .
 
 # Commit
-git commit -m "Initial commit: Fashion AI app with Firebase + Gemini"
+git commit -m "Initial commit: Fashion AI app with Supabase + Gemini"
 
 # Add GitHub repo as remote
 git branch -M main
@@ -73,25 +73,22 @@ When prompted, set:
 
 **Save and deploy**
 
-### C. Add Environment Variable
+### C. Add Environment Variables
 Cloudflare > Pages > Your Project > **Settings** > **Environment variables**
 
 Add:
 ```
 VITE_GEMINI_API_KEY = your_gemini_key_here
+VITE_API_KEY = sk-proj-your-openai-key-here
 ```
-
-(Don't add Firebase keys - they're embedded in build)
 
 ---
 
-## 🌐 Step 4: Connect Your Domain (Optional - 3 min)
-
-If you want `fashion.breaths.live`:
+## 🌐 Step 4: Connect Custom Domain (Optional)
 
 1. Cloudflare > **Pages** > Your Project > **Custom domains**
 2. **Setup custom domain**
-3. Add: `fashion.breaths.live`
+3. Add your custom domain
 4. Follow DNS setup instructions
 
 ---
@@ -100,13 +97,11 @@ If you want `fashion.breaths.live`:
 
 After deploy, your app is live at:
 
-**Cloudflare URL**: `https://fashion-ai-abc123.pages.dev` (auto-generated)
-
-**Custom domain** (if connected): `https://fashion.breaths.live`
+**Cloudflare URL**: `https://fashion-ai-XXX.pages.dev` (auto-generated)
 
 ---
 
-## 🔄 Auto-Deployment (Magic!)
+## 🔄 Auto-Deployment
 
 After this setup, **every time you push to GitHub**:
 
@@ -124,10 +119,10 @@ git push
 
 After deploy completes:
 1. Open your Cloudflare URL
-2. Test Google login
+2. Test Google login (Supabase Auth)
 3. Try uploading an image
 4. Check Gemini API works
-5. Verify images save to Firebase
+5. Verify images save to Supabase Storage
 
 ---
 
@@ -143,12 +138,8 @@ After deploy completes:
 - Add `VITE_GEMINI_API_KEY` in Cloudflare Settings
 - Redeploy
 
-**"Firebase config missing"**
-- Firebase config is hardcoded (OK for frontend)
-- Check `.env.local` has credentials
-
 **"Images not uploading"**
-- Verify Firebase Storage rules allow uploads
+- Verify Supabase Storage bucket exists
 - Check browser console (F12) for errors
 
 ---
@@ -157,7 +148,7 @@ After deploy completes:
 
 ✅ React app (optimized)
 ✅ Gemini AI integration
-✅ Firebase config (embedded)
+✅ Supabase config (embedded)
 ✅ Styles & assets
 ✅ Service worker
 

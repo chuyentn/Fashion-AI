@@ -8,20 +8,18 @@ AI-powered fashion photography app. Upload any garment and generate professional
 
 ## 🚀 Live Deployments
 
-- **Firebase Hosting**: https://fashionstudio-app.web.app
-- **Custom Domain**: https://fashion.breaths.live
-- **GitHub**: https://github.com/chuyentn/Fashion-AI
+- **Supabase Project**: https://csesonwxvgvkozfbtpvb.supabase.co
 
 ## ✨ Features
 
-- ✅ Google Sign-In & Email Auth
+- ✅ Google Sign-In & Email Auth (Supabase Auth)
 - ✅ AI-powered image generation (Gemini + OpenAI)
 - ✅ Pose preservation (99% accuracy)
 - ✅ Product detection & auto-extraction
 - ✅ Face hiding options (pixelate, back view, phone)
 - ✅ Text overlay with custom fonts
 - ✅ Design history & resource library
-- ✅ Cloud storage (Firebase + Supabase)
+- ✅ Cloud storage (Supabase Storage)
 
 ## 🛠️ Run Locally
 
@@ -75,24 +73,14 @@ npm run build
 
 ## 🚀 Deploy
 
-### Option 1: Firebase Hosting (Recommended)
-
-```bash
-npm run build
-firebase deploy --project fashionstudio-app
-```
-
-Live at: https://fashionstudio-app.web.app
-
-### Option 2: Cloudflare Pages
+### Cloudflare Pages
 
 Push to GitHub, Cloudflare auto-deploys on every push.
 
-See [GITHUB_CLOUDFLARE.md](GITHUB_CLOUDFLARE.md) for details.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for details.
 
 ## 🔧 Configuration
 
-- **Firebase**: [FIREBASE_SETUP.md](FIREBASE_SETUP.md)
 - **Deployment**: [DEPLOYMENT.md](DEPLOYMENT.md)
 - **Cloudflare**: [GITHUB_CLOUDFLARE.md](GITHUB_CLOUDFLARE.md)
 - **OAuth/Auth**: [OAUTH_FIX.md](OAUTH_FIX.md)
