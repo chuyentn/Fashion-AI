@@ -358,3 +358,48 @@ export const saveExtractedResult = async (
         return false;
     }
 };
+// --- VIDEO STORYBOARD FUNCTIONS ---
+
+export const saveVideoStoryboard = async (
+    userId: string,
+    name: string,
+    clips: any[],
+    globalPrompt: string
+): Promise<boolean> => {
+    try {
+        const { error } = await supabase
+            .from('projects')
+            .insert({
+                user_id: userId,
+                prompt: globalPrompt,
+                settings: { 
+                    type: 'VIDEO_STORYBOARD', 
+                    name, 
+                    clips: clips.map(c => ({ ...c, sourceImageBase64: null })) // Don't save large base64 to DB if possible, or save to storage
+                }
+            });
+        
+        if (error) throw error;
+        return true;
+    } catch (err) {
+        console.error("Save Storyboard Failed:", err);
+        return false;
+    }
+};
+
+export const fetchVideoStoryboards = async (userId: string): Promise<any[]> => {
+    try {
+        const { data, error } = await supabase
+            .from('projects')
+            .select('*')
+            .eq('user_id', userId)
+            .eq('settings->>type', 'VIDEO_STORYBOARD')
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        return data || [];
+    } catch (err) {
+        console.error("Fetch Storyboards Failed:", err);
+        return [];
+    }
+};

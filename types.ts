@@ -69,7 +69,7 @@ export interface UserProfile {
 }
 
 export interface AppState {
-  view: 'AUTH' | 'HOME' | 'CREATE' | 'GENERATING' | 'RESULTS' | 'LIBRARY' | 'SETTINGS' | 'ADMIN_PANEL' | 'EXTRACT';
+  view: 'AUTH' | 'HOME' | 'CREATE' | 'GENERATING' | 'RESULTS' | 'LIBRARY' | 'SETTINGS' | 'ADMIN_PANEL' | 'EXTRACT' | 'VIDEO';
   previousView?: 'HOME' | 'CREATE' | 'LIBRARY';
   theme: 'light' | 'dark'; 
   referenceImages: ImageFile[]; 
@@ -95,3 +95,46 @@ export interface AppState {
 }
 
 export type ViewName = AppState['view'];
+
+// --- VIDEO STUDIO TYPES ---
+
+export interface VideoClip {
+  id: string;
+  sourceImageUrl: string;       // Starting frame image
+  sourceImageBase64: string;
+  sourceImageMimeType: string;
+  prompt: string;               // Text prompt for video generation
+  structuredPrompt?: VideoStructuredPrompt; // Structured JSON prompt
+  videoUrl?: string;            // Generated video URL
+  status: 'idle' | 'generating' | 'done' | 'error';
+  progress?: string;            // Progress message
+  error?: string;
+  duration?: number;            // Video duration in seconds
+  order: number;                // Order in storyboard
+}
+
+export interface VideoStructuredPrompt {
+  scene: string;
+  character: {
+    action: string;
+    expression?: string;
+  };
+  camera: string;
+  voice?: {
+    accent?: string;
+    dialogue?: string;
+  };
+  backgroundAudio?: {
+    musicStyle?: string;
+  };
+  negativePrompt?: string;
+  durationSeconds: string;
+  quality: string;
+}
+
+export interface VideoStoryboard {
+  id: string;
+  name: string;
+  clips: VideoClip[];
+  createdAt: number;
+}
