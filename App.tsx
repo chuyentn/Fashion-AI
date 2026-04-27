@@ -14,8 +14,8 @@ import {
   saveApiSettings, 
   DEFAULT_API_BASE_URL 
 } from './services/apiSettings';
-import { generateImages } from './services/geminiService';
-import { saveProject, fetchUserHistory } from './services/supabase';
+import { generateFashionShots } from './services/geminiService';
+import { saveProjectToSupabase, fetchUserHistory } from './services/supabase';
 
 // Modular Components & Views
 import { Sidebar } from './components/Sidebar';
@@ -129,28 +129,41 @@ const App: React.FC = () => {
 
     try {
       // 2. Call API
-      const results = await generateImages({
-        referenceImages: state.referenceImages.map(img => img.base64),
-        productImages: state.productImages.map(img => img.base64),
-        overlayText: state.overlayText,
-        modelTier: state.modelTier,
-        resolution: state.resolution,
-        count: state.outputCount,
-        faceHideEnabled: state.faceHideEnabled,
-        faceHideType: state.faceHideType
-      }, apiSettings);
+      const results = await generateFashionShots(
+        state.referenceImages,
+        state.productImages,
+        state.prompt,
+        state.outputCount,
+        state.resolution,
+        state.aspectRatio,
+        state.modelTier,
+        state.useAnalysisMode,
+        state.faceHideEnabled,
+        state.faceHideType,
+        state.overlayText,
+        state.textLanguage,
+        state.fontStyle,
+        apiSettings
+      );
 
       // 3. Save to Supabase
-      const historyItem = await saveProject({
-        userId: state.userProfile.id,
-        prompt: state.overlayText || "Fashion Collection",
-        images: results.map(url => ({ url })),
-        settings: {
-           model: state.modelTier,
+      const historyItem = await saveProjectToSupabase(
+        state.userProfile.id,
+        state.userProfile.email,
+        state.overlayText || "Fashion Collection",
+        {
+           modelTier: state.modelTier,
            resolution: state.resolution,
-           faceHide: state.faceHideEnabled
-        }
-      });
+           aspectRatio: state.aspectRatio,
+           useAnalysisMode: state.useAnalysisMode,
+           faceHideEnabled: state.faceHideEnabled,
+           faceHideType: state.faceHideType,
+           outputCount: state.outputCount,
+        },
+        state.referenceImages,
+        state.productImages,
+        results.map(url => ({ id: '', url: url.url, isLoading: false }))
+      );
 
       // 4. Update UI
       setGeneratedImages(results.map((url, i) => ({ id: `gen-${i}`, url, isLoading: false })));
@@ -193,7 +206,7 @@ const App: React.FC = () => {
       case 'LIBRARY':
         return <LibraryView userProfile={state.userProfile} history={history} onOpenHistory={(item) => { setCurrentProject(item); setGeneratedImages(item.images.map(img => ({ ...img, isLoading: false }))); updateState({ view: 'RESULTS' }); }} onViewImage={setZoomImage} onOpenAdmin={() => updateState({ view: 'ADMIN_PANEL' })} />;
       case 'VIDEO':
-        return <VideoStudioView state={state} updateState={updateState} />;
+        return <VideoStudioView state={state} updateState={updateState} apiSettings={apiSettings} />;
       case 'RESULTS':
         return <ResultsView images={generatedImages} onBack={() => updateState({ view: 'CREATE' })} onHome={() => updateState({ view: 'HOME' })} onViewImage={setZoomImage} onRemix={handleRemix} currentProject={currentProject} />;
       case 'ADMIN_PANEL':

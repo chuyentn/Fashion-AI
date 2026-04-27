@@ -2,9 +2,10 @@
 import React, { useState, useRef } from 'react';
 import { Header } from '../components/Common';
 import { AppState, VideoClip } from '../types';
-import { generateVideoClip } from '../services/veoService';
+import { generateFashionVideo } from '../services/veoService';
+import { fileToBase64 } from '../services/geminiService';
 
-export const VideoStudioView = ({ state, updateState }: { state: AppState, updateState: (s: Partial<AppState>) => void }) => {
+export const VideoStudioView = ({ state, updateState, apiSettings }: { state: AppState, updateState: (s: Partial<AppState>) => void, apiSettings: any }) => {
   const [clips, setClips] = useState<VideoClip[]>([]);
   const [isGeneratingAll, setIsGeneratingAll] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -22,8 +23,12 @@ export const VideoStudioView = ({ state, updateState }: { state: AppState, updat
   const processClip = async (clip: VideoClip) => {
     setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'generating' } : c));
     try {
-      const videoUrl = await generateVideoClip(clip.sourceImage);
-      setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'done', videoUrl } : c));
+      const response = await fetch(clip.sourceImage);
+      const blob = await response.blob();
+      const base64 = await fileToBase64(blob);
+      const result = await generateFashionVideo(base64, blob.type, "Fashion Show", apiSettings);
+      
+      setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'done', videoUrl: result?.url || '' } : c));
     } catch (err) {
       setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'error' } : c));
     }

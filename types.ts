@@ -1,4 +1,4 @@
-
+export const CURRENT_VERSION = '3.0.0';
 export interface ImageFile {
   id: string; 
   file: File | null; // Null if picked from library

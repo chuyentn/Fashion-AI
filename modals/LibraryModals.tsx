@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { uploadImageToSupabase, saveAdminResource, fetchAdminResources } from '../../services/supabase';
-import { GeneratedImage, AdminResource, UserProfile } from '../../types';
+import { uploadImageToSupabase, saveAdminResource, fetchAdminResources } from '../services/supabase';
+import { GeneratedImage, AdminResource, UserProfile } from '../types';
 
 export const SaveToLibraryModal = ({ isOpen, onClose, image, userId }: { isOpen: boolean, onClose: () => void, image: GeneratedImage | null, userId: string }) => {
     const [name, setName] = useState('');
