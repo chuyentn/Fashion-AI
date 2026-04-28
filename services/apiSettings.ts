@@ -1,6 +1,6 @@
 
 // API Settings storage module — localStorage persistence
-// Supports: Gemini (Image + Video) and OpenAI (GPT Image 2)
+// Supports: Gemini (Image + Video), OpenAI (GPT Image 2), and KIE Marketplace
 // Auth Modes: API Key | Bearer Token (Labs Ultra) | Cookie Session
 
 export type AuthMode = 'apikey' | 'bearer' | 'cookie';
@@ -34,10 +34,18 @@ export interface ApiSettings {
   videoModel: 'standard' | 'lite'; // standard = Veo 3.1, lite = Veo 3.1 Lite
 
   // State persistence
-  lastUsedService: 'gemini' | 'openai';
+  lastUsedService: 'gemini' | 'openai' | 'kie';
 
   // OpenAI Base URL — configurable endpoint for proxies
   openaiBaseUrl: string;
+
+  // KIE Marketplace — unified multi-model gateway
+  // Docs: https://docs.kie.ai
+  kieEnabled: boolean;
+  kieApiKey: string;
+  kieWebhookHmac: string;     // HMAC key for webhook callback verification
+  kiePreferredImageModel: string;   // default: 'flux-2/pro-text-to-image'
+  kiePreferredVideoModel: string;   // default: 'kling/kling-3-0'
 }
 
 // Model ID constants — April 2026 latest
@@ -79,6 +87,12 @@ const DEFAULT_SETTINGS: ApiSettings = {
   videoModel: 'standard',
   lastUsedService: 'gemini',
   openaiBaseUrl: 'https://api.openai.com/v1',
+  // KIE Marketplace defaults
+  kieEnabled: !!(import.meta.env?.VITE_KIE_API_KEY),
+  kieApiKey: import.meta.env?.VITE_KIE_API_KEY || '',
+  kieWebhookHmac: import.meta.env?.VITE_KIE_WEBHOOK_HMAC || '',
+  kiePreferredImageModel: import.meta.env?.VITE_KIE_DEFAULT_IMAGE_MODEL || 'flux-2/pro-text-to-image',
+  kiePreferredVideoModel: import.meta.env?.VITE_KIE_DEFAULT_VIDEO_MODEL || 'kling/kling-3-0',
 };
 
 // Helper: get defaults based on auth mode
@@ -156,6 +170,11 @@ export function isValidBearerToken(token: string): boolean {
 // Helper: check if Cookie string looks valid
 export function isValidCookieString(cookie: string): boolean {
   return cookie.trim().length > 20;
+}
+
+// Helper: check if a KIE API key looks valid (32-char hex)
+export function isValidKieKey(key: string): boolean {
+  return /^[a-f0-9]{32}$/i.test(key.trim());
 }
 
 // Helper: mask an API key for display
@@ -242,6 +261,26 @@ export async function verifyOpenAIKey(key: string, baseUrl: string = 'https://ap
     }
   } catch (e: any) {
     return { ok: false, message: `❌ Lỗi kết nối OpenAI: ${e.message}` };
+  }
+}
+
+export async function verifyKieKey(key: string): Promise<{ ok: boolean; message: string }> {
+  if (!key) return { ok: false, message: 'Chưa nhập KIE API Key.' };
+  if (!isValidKieKey(key)) return { ok: false, message: '❌ KIE Key không đúng định dạng (cần 32 ký tự hex).' };
+  try {
+    const res = await fetch(`https://api.kie.ai/api/v1/jobs/recordInfo?taskId=verify_check`, {
+      headers: { 'Authorization': `Bearer ${key}` }
+    });
+    if (res.status === 401) {
+      return { ok: false, message: '❌ KIE API Key không hợp lệ (401).' };
+    }
+    const data = await res.json();
+    if (data.code === 401) {
+      return { ok: false, message: `❌ KIE xác thực thất bại: ${data.msg}` };
+    }
+    return { ok: true, message: '✅ KIE Marketplace kết nối thành công!' };
+  } catch (e: any) {
+    return { ok: false, message: `❌ Lỗi kết nối KIE: ${e.message}` };
   }
 }
 
