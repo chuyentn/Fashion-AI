@@ -174,7 +174,7 @@ footer .f-copy{font-size:10px;color:var(--muted);letter-spacing:1px}
       </div>
     </div>
     <div class="hero-video">
-      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1" title="FashionStudio AI Demo" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+      <iframe id="yt-demo" src="" title="FashionStudio AI Demo" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
       <div class="vid-caption">
         <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent)">play_circle</span>
         <span data-vi="Demo: Tạo banner thời trang trong 30 giây với AI" data-en="Demo: Create fashion banners in 30 seconds with AI">Demo: Tạo banner thời trang trong 30 giây với AI</span>
@@ -324,6 +324,14 @@ footer .f-copy{font-size:10px;color:var(--muted);letter-spacing:1px}
 </footer>
 
 <script>
+// === YouTube Video Config ===
+// Set via Cloudflare Pages env: VITE_YOUTUBE_VIDEO_ID
+// Fallback: change the default ID below
+var YT_VIDEO_ID = '%VITE_YOUTUBE_VIDEO_ID%';
+if (!YT_VIDEO_ID || YT_VIDEO_ID.indexOf('VITE_') !== -1) YT_VIDEO_ID = 'dQw4w9WgXcQ';
+document.getElementById('yt-demo').src = 'https://www.youtube.com/embed/' + YT_VIDEO_ID + '?rel=0&modestbranding=1';
+
+// === Language Toggle ===
 let currentLang = localStorage.getItem('lp-lang') || 'vi';
 function setLang(lang) {
   currentLang = lang;
