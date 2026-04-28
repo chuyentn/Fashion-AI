@@ -10,9 +10,12 @@ import {
   importProject,
   verifyGeminiKey,
   verifyOpenAIKey,
+  verifyKieKey,
+  isValidKieKey,
   AuthMode,
   getAuthModeLabel
 } from '../services/apiSettings';
+import { getTextToImageModels, getTextToVideoModels } from '../services/kieModels';
 import { supabase } from '../services/supabase';
 import { useTranslation } from 'react-i18next';
 
@@ -20,8 +23,10 @@ export const SettingsView = ({ state, updateState, apiSettings, updateApiSetting
   const { t } = useTranslation();
   const [verifyingGemini, setVerifyingGemini] = React.useState(false);
   const [verifyingOpenAI, setVerifyingOpenAI] = React.useState(false);
+  const [verifyingKie, setVerifyingKie] = React.useState(false);
   const [geminiStatus, setGeminiStatus] = React.useState<{ ok: boolean; message: string } | null>(null);
   const [openaiStatus, setOpenaiStatus] = React.useState<{ ok: boolean; message: string } | null>(null);
+  const [kieStatus, setKieStatus] = React.useState<{ ok: boolean; message: string } | null>(null);
 
   const handleVerifyGemini = async () => {
     setVerifyingGemini(true);
@@ -38,8 +43,16 @@ export const SettingsView = ({ state, updateState, apiSettings, updateApiSetting
     setOpenaiStatus(res);
     setVerifyingOpenAI(false);
   };
+
+  const handleVerifyKie = async () => {
+    setVerifyingKie(true);
+    setKieStatus(null);
+    const res = await verifyKieKey(apiSettings.kieApiKey);
+    setKieStatus(res);
+    setVerifyingKie(false);
+  };
   return (
-    <div className="flex-1 overflow-y-auto no-scrollbar bg-[#f7f6f8] dark:bg-[#110b18] animate-fadeIn relative">
+    <div className="flex-1 h-full overflow-y-auto bg-[#f7f6f8] dark:bg-[#110b18] animate-fadeIn relative">
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/5 dark:bg-primary/10 rounded-full blur-[120px] pointer-events-none -translate-y-1/2"></div>
       
       <Header title={t('settings.title')} />
@@ -216,6 +229,107 @@ export const SettingsView = ({ state, updateState, apiSettings, updateApiSetting
               </div>
             )}
           </div>
+        </div>
+
+        {/* --- KIE MARKETPLACE SECTION --- */}
+        <div className="card-premium rounded-[32px] p-6 md:p-10 animate-slideUp bg-white dark:bg-[#1a1025] border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-xl" style={{ animationDelay: '0.18s' }}>
+          <div className="flex items-center gap-5 mb-8">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#6366f1] to-[#8b5cf6] flex items-center justify-center text-white shadow-lg shadow-indigo-500/20 shrink-0">
+              <span className="material-symbols-outlined text-2xl">hub</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-black text-lg text-gray-900 dark:text-white uppercase tracking-wider">KIE Marketplace</h3>
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">30+ AI Models · Flux · Ideogram · Kling · Sora2</p>
+            </div>
+            <button onClick={() => updateApiSettings({ kieEnabled: !apiSettings.kieEnabled })} className={`w-14 h-8 rounded-full relative transition-all duration-500 shrink-0 ${apiSettings.kieEnabled ? 'bg-indigo-500 shadow-[0_0_20px_rgba(99,102,241,0.5)]' : 'bg-gray-200 dark:bg-white/[0.1]'}`}>
+              <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full shadow-md transition-transform duration-500 ${apiSettings.kieEnabled ? 'translate-x-6' : 'translate-x-0'}`}></div>
+            </button>
+          </div>
+
+          {apiSettings.kieEnabled && (
+            <div className="space-y-8 animate-slideUp">
+              {/* API Key Input */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">KIE API Key</label>
+                <div className="relative">
+                  <input type="password" value={apiSettings.kieApiKey}
+                    onChange={e => updateApiSettings({ kieApiKey: e.target.value })}
+                    placeholder="Nhập API Key từ kie.ai/vi/settings" className="input-studio w-full font-mono pr-14" />
+                  {apiSettings.kieApiKey && (
+                    <button onClick={() => updateApiSettings({ kieApiKey: '' })} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-red-400 transition-colors bg-gray-100 dark:bg-white/5 rounded-full p-1">
+                      <span className="material-symbols-outlined text-sm">close</span>
+                    </button>
+                  )}
+                </div>
+                <div className="flex items-center justify-between mt-3">
+                  <a href="https://kie.ai/vi/settings" target="_blank" rel="noopener noreferrer" className="text-[10px] text-indigo-500 hover:text-gray-900 dark:hover:text-white font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors ml-1">
+                    <span className="material-symbols-outlined text-sm">open_in_new</span> Lấy API Key tại kie.ai
+                  </a>
+                  <button onClick={handleVerifyKie} disabled={verifyingKie || !apiSettings.kieApiKey} className="text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-lg bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-400 hover:bg-indigo-500/10 hover:text-indigo-500 transition-all flex items-center gap-2 disabled:opacity-40">
+                    <span className={`material-symbols-outlined text-sm ${verifyingKie ? 'animate-spin' : ''}`}>{verifyingKie ? 'sync' : 'verified'}</span>
+                    Test Connection
+                  </button>
+                </div>
+                {kieStatus && (
+                  <div className={`mt-3 p-3 rounded-xl text-[10px] font-bold uppercase tracking-widest ${kieStatus.ok ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                    {kieStatus.message}
+                  </div>
+                )}
+              </div>
+
+              {/* Preferred Image Model */}
+              <div className="pt-8 border-t border-gray-200 dark:border-white/[0.06]">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 block ml-1">🎨 Preferred Image Model</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {getTextToImageModels().filter(m => m.recommended).map(model => (
+                    <button key={model.id} onClick={() => updateApiSettings({ kiePreferredImageModel: model.id })}
+                      className={`p-4 rounded-[20px] border-2 transition-all text-left ${apiSettings.kiePreferredImageModel === model.id ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_20px_rgba(99,102,241,0.15)]' : 'border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/[0.04]'}`}>
+                      <span className="font-black text-[11px] text-gray-900 dark:text-white uppercase tracking-widest">{model.name}</span>
+                      <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">{model.provider} · {model.tier}</p>
+                    </button>
+                  ))}
+                  {getTextToImageModels().filter(m => !m.recommended).slice(0, 4).map(model => (
+                    <button key={model.id} onClick={() => updateApiSettings({ kiePreferredImageModel: model.id })}
+                      className={`p-4 rounded-[20px] border-2 transition-all text-left ${apiSettings.kiePreferredImageModel === model.id ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_20px_rgba(99,102,241,0.15)]' : 'border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/[0.04]'}`}>
+                      <span className="font-black text-[11px] text-gray-900 dark:text-white uppercase tracking-widest">{model.name}</span>
+                      <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">{model.provider} · {model.tier}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Preferred Video Model */}
+              <div className="pt-8 border-t border-gray-200 dark:border-white/[0.06]">
+                <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest mb-4 block ml-1">🎬 Preferred Video Model</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {getTextToVideoModels().filter(m => m.recommended).map(model => (
+                    <button key={model.id} onClick={() => updateApiSettings({ kiePreferredVideoModel: model.id })}
+                      className={`p-4 rounded-[20px] border-2 transition-all text-left ${apiSettings.kiePreferredVideoModel === model.id ? 'border-pink-500 bg-pink-500/10 shadow-[0_0_20px_rgba(236,72,153,0.15)]' : 'border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/[0.04]'}`}>
+                      <span className="font-black text-[11px] text-gray-900 dark:text-white uppercase tracking-widest">{model.name}</span>
+                      <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">{model.provider} · {model.tier}</p>
+                    </button>
+                  ))}
+                  {getTextToVideoModels().filter(m => !m.recommended).slice(0, 4).map(model => (
+                    <button key={model.id} onClick={() => updateApiSettings({ kiePreferredVideoModel: model.id })}
+                      className={`p-4 rounded-[20px] border-2 transition-all text-left ${apiSettings.kiePreferredVideoModel === model.id ? 'border-pink-500 bg-pink-500/10 shadow-[0_0_20px_rgba(236,72,153,0.15)]' : 'border-gray-200 dark:border-white/[0.06] bg-gray-50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/[0.04]'}`}>
+                      <span className="font-black text-[11px] text-gray-900 dark:text-white uppercase tracking-widest">{model.name}</span>
+                      <p className="text-[9px] text-gray-500 font-bold uppercase tracking-widest mt-1">{model.provider} · {model.tier}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Marketplace Link */}
+              <div className="pt-6 border-t border-gray-200 dark:border-white/[0.06] flex items-center justify-between">
+                <a href="https://kie.ai/vi/models" target="_blank" rel="noopener noreferrer" className="text-[10px] text-indigo-500 hover:text-gray-900 dark:hover:text-white font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors">
+                  <span className="material-symbols-outlined text-sm">storefront</span> Xem toàn bộ Models Marketplace
+                </a>
+                <a href="https://docs.kie.ai" target="_blank" rel="noopener noreferrer" className="text-[10px] text-gray-500 hover:text-gray-900 dark:hover:text-white font-bold uppercase tracking-widest flex items-center gap-1.5 transition-colors">
+                  <span className="material-symbols-outlined text-sm">description</span> API Docs
+                </a>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* --- DATA MANAGEMENT --- */}
