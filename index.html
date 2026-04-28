@@ -327,6 +327,17 @@ footer .f-copy{font-size:10px;color:var(--muted);letter-spacing:1px}
 // === YouTube Video Config ===
 // Set via Cloudflare Pages env: VITE_YOUTUBE_VIDEO_ID
 // Fallback: change the default ID below
+// === Auth Redirect Safety Net ===
+// If OAuth callback lands here with #access_token, forward to app.html
+(function() {
+  var hash = window.location.hash;
+  if (hash && (hash.indexOf('access_token=') !== -1 || hash.indexOf('refresh_token=') !== -1)) {
+    window.location.replace('/app.html' + hash);
+    return;
+  }
+})();
+
+// === YouTube Embed ===
 var YT_VIDEO_ID = '%VITE_YOUTUBE_VIDEO_ID%';
 if (!YT_VIDEO_ID || YT_VIDEO_ID.indexOf('VITE_') !== -1) YT_VIDEO_ID = 'dQw4w9WgXcQ';
 document.getElementById('yt-demo').src = 'https://www.youtube.com/embed/' + YT_VIDEO_ID + '?rel=0&modestbranding=1';

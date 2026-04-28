@@ -3,7 +3,9 @@ import React, { useState } from 'react';
 import { supabase, ensureProfileExists } from '../services/supabase';
 
 // ===== PRODUCTION SITE URL =====
-const SITE_URL = 'https://fashion.breaths.live';
+// Must point to /app.html — the React SPA that handles auth tokens
+// Root URL is the static landing page and cannot process OAuth callbacks
+const SITE_URL = 'https://fashion.breaths.live/app.html';
 
 export const AuthView = ({ onAuthSuccess }: { onAuthSuccess: (session: any) => void }) => {
   const [mode, setMode] = useState<'LOGIN' | 'SIGNUP' | 'FORGOT'>('LOGIN');
@@ -65,7 +67,7 @@ export const AuthView = ({ onAuthSuccess }: { onAuthSuccess: (session: any) => v
         if (data.session) onAuthSuccess(data.session);
       } else if (mode === 'FORGOT') {
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${SITE_URL}/reset-password`
+          redirectTo: `https://fashion.breaths.live/app.html#reset-password`
         });
         if (error) throw error;
         setMessage({ text: '📧 Link đặt lại mật khẩu đã được gửi đến email của bạn!', type: 'success' });
