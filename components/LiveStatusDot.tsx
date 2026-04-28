@@ -17,13 +17,15 @@ export const LiveStatusDot = ({ settings, type }: { settings: ApiSettings; type:
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(async () => {
       try {
-        const result = type === 'gemini' ? await verifyGeminiKey(settings) : await verifyOpenAIKey(settings.openaiKey);
+        const result = type === 'gemini' 
+          ? await verifyGeminiKey(settings) 
+          : await verifyOpenAIKey(settings.openaiKey, settings.openaiBaseUrl);
         setStatus(result.ok ? 'live' : 'dead');
         setMsg(result.message);
       } catch { setStatus('dead'); setMsg('Lỗi kết nối'); }
     }, 1500);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [credential, settings.authMode, settings.baseUrl]);
+  }, [credential, settings.authMode, settings.baseUrl, settings.openaiBaseUrl]);
 
   if (status === 'idle') return null;
   return (

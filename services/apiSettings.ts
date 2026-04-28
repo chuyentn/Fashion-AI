@@ -35,6 +35,9 @@ export interface ApiSettings {
 
   // State persistence
   lastUsedService: 'gemini' | 'openai';
+
+  // OpenAI Base URL — configurable endpoint for proxies
+  openaiBaseUrl: string;
 }
 
 // Model ID constants — April 2026 latest
@@ -64,9 +67,9 @@ const STORAGE_KEY = 'fashion-ai-api-settings';
 
 const DEFAULT_SETTINGS: ApiSettings = {
   authMode: 'apikey',
-  geminiKey: '',
+  geminiKey: import.meta.env?.VITE_GEMINI_API_KEY || '',
   geminiModel: 'fast',    // Default to Nano Banana 2 (fast + cheap)
-  openaiKey: '',
+  openaiKey: import.meta.env?.VITE_API_KEY || '',
   openaiModel: 'gpt-image-2',
   bearerToken: '',
   googleProjectId: '',
@@ -75,6 +78,7 @@ const DEFAULT_SETTINGS: ApiSettings = {
   videoEnabled: false,
   videoModel: 'standard',
   lastUsedService: 'gemini',
+  openaiBaseUrl: 'https://api.openai.com/v1',
 };
 
 // Helper: get defaults based on auth mode
@@ -225,10 +229,10 @@ export async function verifyGeminiKey(settings: ApiSettings): Promise<{ ok: bool
   }
 }
 
-export async function verifyOpenAIKey(key: string): Promise<{ ok: boolean; message: string }> {
+export async function verifyOpenAIKey(key: string, baseUrl: string = 'https://api.openai.com/v1'): Promise<{ ok: boolean; message: string }> {
   if (!key) return { ok: false, message: 'Chưa nhập OpenAI API Key.' };
   try {
-    const res = await fetch('https://api.openai.com/v1/models', {
+    const res = await fetch(`${baseUrl}/models`, {
       headers: { 'Authorization': `Bearer ${key}` }
     });
     if (res.ok) {

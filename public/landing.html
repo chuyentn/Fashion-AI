@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FashionStudio AI — Tạo Ảnh Thời Trang Chuyên Nghiệp Bằng AI</title>
+<meta name="description" content="Nền tảng AI tạo ảnh thời trang, banner quảng cáo và video lookbook tự động. Tích hợp Gemini + GPT Image. Miễn phí cho designer."/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@400&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0510;--surface:#130d1a;--card:#1a1025;--border:rgba(255,255,255,.06);--primary:#a413ec;--accent:#c040ff;--pink:#ec4899;--orange:#f59e0b;--green:#10b981;--text:#e2e0e6;--muted:#888}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6}
+a{color:var(--accent);text-decoration:none;transition:.2s}
+a:hover{color:#fff}
+.mono{font-family:'JetBrains Mono',monospace}
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:14px 32px;border-radius:16px;font-weight:800;font-size:13px;text-transform:uppercase;letter-spacing:2px;border:none;cursor:pointer;transition:.3s}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--pink));color:#fff;box-shadow:0 8px 30px rgba(164,19,236,.3)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(164,19,236,.5)}
+.btn-outline{background:transparent;color:var(--accent);border:1.5px solid rgba(192,64,255,.3)}
+.btn-outline:hover{background:rgba(192,64,255,.1);border-color:var(--accent)}
+.material-symbols-outlined{font-size:20px;vertical-align:middle}
+
+/* NAV */
+nav{position:fixed;top:0;width:100%;z-index:100;background:rgba(10,5,16,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:16px 0}
+nav .inner{display:flex;align-items:center;justify-content:space-between}
+nav .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:#fff}
+nav .logo i{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),var(--pink));border-radius:12px;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:20px}
+nav .links{display:flex;gap:28px;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px}
+nav .links a:hover{color:#fff}
+nav .cta-nav{font-size:12px;padding:10px 24px;border-radius:12px;background:var(--primary);color:#fff;font-weight:800;letter-spacing:1px;text-transform:uppercase}
+nav .nav-right{display:flex;align-items:center;gap:12px}
+.lang-toggle{display:flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;font-size:11px;font-weight:800}
+.lang-toggle button{padding:6px 14px;background:transparent;color:var(--muted);border:none;cursor:pointer;letter-spacing:1px;transition:.2s;display:flex;align-items:center;gap:6px}
+.lang-toggle button.active{background:var(--accent);color:#fff}
+.lang-toggle button svg{flex-shrink:0;border-radius:2px}
+
+/* HERO */
+.hero{padding:160px 0 80px;position:relative}
+.hero::before{content:'';position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(164,19,236,.15),transparent 70%);pointer-events:none}
+.hero-inner{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.hero-text h1{font-size:clamp(32px,4.5vw,56px);font-weight:800;line-height:1.1;color:#fff;margin-bottom:20px}
+.hero-text h1 span{background:linear-gradient(135deg,var(--accent),var(--pink));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-text p{font-size:16px;color:var(--muted);max-width:480px;margin-bottom:32px;line-height:1.7}
+.hero .btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.hero-video{border-radius:20px;overflow:hidden;border:1px solid var(--border);box-shadow:0 20px 60px rgba(0,0,0,.5);background:var(--surface)}
+.hero-video iframe{width:100%;aspect-ratio:16/9;display:block;border:none}
+.hero-video .vid-caption{padding:12px 16px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--muted);font-weight:600;border-top:1px solid var(--border)}
+.hero-links{display:flex;gap:16px;margin-bottom:8px}
+.hero-links a{font-size:11px;color:var(--muted);font-weight:700;display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:10px;border:1px solid var(--border);transition:.2s}
+.hero-links a:hover{border-color:var(--accent);color:#fff}
+.stats{display:flex;justify-content:center;gap:48px;flex-wrap:wrap;margin-top:40px;text-align:center}
+.stat{text-align:center}
+.stat .num{font-size:36px;font-weight:800;color:#fff}
+@media(max-width:768px){.hero-inner{grid-template-columns:1fr;text-align:center}.hero-text p{margin-left:auto;margin-right:auto}.hero .btns,.hero-links{justify-content:center}}
+.stat .num span{color:var(--accent)}
+.stat .lbl{font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--muted);font-weight:700;margin-top:4px}
+
+/* TERMINAL */
+.terminal-section{padding:80px 0}
+.terminal{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;max-width:900px;margin:0 auto}
+.terminal-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border)}
+.terminal-dots{display:flex;gap:8px}
+.terminal-dots span{width:12px;height:12px;border-radius:50%}
+.terminal-dots span:nth-child(1){background:#ef4444}
+.terminal-dots span:nth-child(2){background:#f59e0b}
+.terminal-dots span:nth-child(3){background:#22c55e}
+.terminal-title{font-size:12px;color:var(--muted);font-weight:600;letter-spacing:1px}
+.terminal-body{padding:32px;font-size:14px;line-height:2.2}
+.terminal-body .cmd{color:var(--green);font-weight:700}
+.terminal-body .desc{color:var(--muted);padding-left:20px;font-size:13px}
+.tags{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:40px}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:40px;border:1px solid var(--border);font-size:11px;font-weight:700;color:var(--text);background:var(--surface);text-transform:uppercase;letter-spacing:1px}
+
+/* SECTIONS */
+.section{padding:80px 0}
+.section-title{font-size:clamp(28px,4vw,42px);font-weight:800;text-align:center;color:#fff;margin-bottom:12px}
+.section-sub{text-align:center;color:var(--muted);font-size:14px;margin-bottom:48px;letter-spacing:.5px}
+
+/* MODELS */
+.models-grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.model-pill{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:40px;border:1px solid var(--border);background:var(--surface);font-size:12px;font-weight:700;color:#fff;transition:.3s}
+.model-pill:hover{border-color:var(--accent);background:rgba(164,19,236,.1)}
+.model-pill .badge{font-size:9px;padding:3px 8px;border-radius:6px;font-weight:800;text-transform:uppercase;letter-spacing:1px}
+
+/* FLOW */
+.flow{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:48px}
+.flow-step{text-align:center;width:160px;padding:28px 16px;border-radius:20px;border:1px solid var(--border);background:var(--surface);transition:.3s}
+.flow-step:hover{border-color:var(--accent);transform:translateY(-4px)}
+.flow-step .icon{font-size:32px;margin-bottom:12px}
+.flow-step .step-num{font-size:10px;color:var(--accent);font-weight:800;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px}
+.flow-step .step-label{font-size:12px;font-weight:700;color:#fff}
+.flow-step .step-desc{font-size:10px;color:var(--muted);margin-top:4px}
+
+/* BENEFITS */
+.benefits{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:48px}
+.benefit-card{padding:32px;border-radius:20px;border:1px solid var(--border);background:var(--surface);transition:.3s}
+.benefit-card:hover{border-color:var(--accent)}
+.benefit-card .b-icon{font-size:28px;margin-bottom:16px}
+.benefit-card h3{font-size:16px;font-weight:800;color:#fff;margin-bottom:8px}
+.benefit-card p{font-size:13px;color:var(--muted);line-height:1.7}
+
+/* CTA */
+.cta-section{padding:80px 0;text-align:center}
+.cta-box{background:linear-gradient(135deg,rgba(164,19,236,.15),rgba(236,72,153,.1));border:1px solid rgba(164,19,236,.2);border-radius:32px;padding:60px 40px;max-width:700px;margin:0 auto}
+.cta-box h2{font-size:28px;font-weight:800;color:#fff;margin-bottom:12px}
+.cta-box p{color:var(--muted);margin-bottom:32px;font-size:14px}
+
+/* SUPPORT */
+.support{padding:60px 0}
+.support-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.support-card{display:flex;align-items:center;gap:14px;padding:20px;border-radius:16px;border:1px solid var(--border);background:var(--surface);transition:.3s;text-decoration:none;color:var(--text)}
+.support-card:hover{border-color:var(--accent);background:rgba(164,19,236,.05)}
+.support-card .s-icon{width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.support-card .s-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;font-weight:700}
+.support-card .s-value{font-size:13px;color:#fff;font-weight:700;margin-top:2px}
+
+/* FOOTER */
+footer{padding:40px 0;border-top:1px solid var(--border);text-align:center}
+footer .f-brand{font-weight:800;font-size:16px;color:#fff;margin-bottom:8px}
+footer .f-desc{font-size:12px;color:var(--muted);margin-bottom:20px}
+footer .f-links{display:flex;gap:20px;justify-content:center;margin-bottom:16px}
+footer .f-links a{font-size:12px;color:var(--muted);font-weight:600}
+footer .f-copy{font-size:10px;color:var(--muted);letter-spacing:1px}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  nav .links{display:none}
+  .stats{gap:24px}
+  .flow{flex-direction:column;align-items:center}
+  .terminal-body{padding:20px;font-size:12px}
+  .cta-box{padding:40px 24px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+<div class="container inner">
+  <div class="logo"><i>✦</i>FashionStudio <span style="color:var(--accent);font-size:12px;letter-spacing:3px">AI</span></div>
+  <div class="links">
+    <a href="#features" data-vi="Tính năng" data-en="Features">Tính năng</a>
+    <a href="#models">AI Models</a>
+    <a href="#flow" data-vi="Quy trình" data-en="Workflow">Quy trình</a>
+    <a href="#support" data-vi="Hỗ trợ" data-en="Support">Hỗ trợ</a>
+  </div>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="active" onclick="setLang('vi')"><svg width="16" height="12" viewBox="0 0 16 12"><rect width="16" height="12" fill="#DA251D"/><polygon points="8,1.5 9.2,5 12.5,5 9.8,7 10.8,10.5 8,8.2 5.2,10.5 6.2,7 3.5,5 6.8,5" fill="#FFFF00"/></svg> VN</button>
+      <button onclick="setLang('en')"><svg width="16" height="12" viewBox="0 0 16 12"><rect width="16" height="12" fill="#012169"/><path d="M0,0L16,12M16,0L0,12" stroke="#fff" stroke-width="2"/><path d="M0,0L16,12M16,0L0,12" stroke="#C8102E" stroke-width="1"/><path d="M8,0V12M0,6H16" stroke="#fff" stroke-width="3.5"/><path d="M8,0V12M0,6H16" stroke="#C8102E" stroke-width="2"/></svg> EN</button>
+    </div>
+    <a href="https://fashion.breaths.live" class="cta-nav btn" data-vi="Dùng Ngay →" data-en="Try Now →">Dùng Ngay →</a>
+  </div>
+</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+<div class="container">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h1 data-vi="Tạo ảnh thời trang<br><span>bằng AI chuyên nghiệp</span>" data-en="Create fashion images<br><span>with professional AI</span>">Tạo ảnh thời trang<br><span>bằng AI chuyên nghiệp</span></h1>
+      <p data-vi="Nền tảng AI đầu tiên dành riêng cho ngành thời trang — tạo banner, lookbook, video quảng cáo chỉ trong 30 giây. Tích hợp Gemini 3 + GPT Image 2." data-en="The first AI platform built for fashion — create banners, lookbooks, and ad videos in 30 seconds. Powered by Gemini 3 + GPT Image 2.">Nền tảng AI đầu tiên dành riêng cho ngành thời trang — tạo banner, lookbook, video quảng cáo chỉ trong 30 giây. Tích hợp Gemini 3 + GPT Image 2.</p>
+      <div class="btns">
+        <a href="https://fashion.breaths.live" class="btn btn-primary" data-vi="<span class='material-symbols-outlined'>rocket_launch</span> Bắt đầu miễn phí" data-en="<span class='material-symbols-outlined'>rocket_launch</span> Start Free"><span class="material-symbols-outlined">rocket_launch</span> Bắt đầu miễn phí</a>
+        <a href="https://cal.com/victorchuyen/coachai" class="btn btn-outline" data-vi="<span class='material-symbols-outlined'>calendar_month</span> Đặt lịch tư vấn" data-en="<span class='material-symbols-outlined'>calendar_month</span> Book Consultation"><span class="material-symbols-outlined">calendar_month</span> Đặt lịch tư vấn</a>
+      </div>
+      <div class="hero-links">
+        <a href="https://github.com/tncsharetool" target="_blank">📂 GitHub Source</a>
+        <a href="#flow">🎬 Xem quy trình</a>
+      </div>
+    </div>
+    <div class="hero-video">
+      <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ?rel=0&modestbranding=1" title="FashionStudio AI Demo" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen></iframe>
+      <div class="vid-caption">
+        <span class="material-symbols-outlined" style="font-size:16px;color:var(--accent)">play_circle</span>
+        <span data-vi="Demo: Tạo banner thời trang trong 30 giây với AI" data-en="Demo: Create fashion banners in 30 seconds with AI">Demo: Tạo banner thời trang trong 30 giây với AI</span>
+      </div>
+    </div>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="num">5<span>+</span></div><div class="lbl">AI Models</div></div>
+    <div class="stat"><div class="num">7</div><div class="lbl" data-vi="Công cụ sáng tạo" data-en="Creative Tools">Công cụ sáng tạo</div></div>
+    <div class="stat"><div class="num">24/7</div><div class="lbl">Cloud Platform</div></div>
+    <div class="stat"><div class="num">0<span>đ</span></div><div class="lbl" data-vi="Bắt đầu miễn phí" data-en="Start Free">Bắt đầu miễn phí</div></div>
+  </div>
+</div>
+</section>
+
+<!-- TERMINAL FEATURES -->
+<section class="terminal-section" id="features">
+<div class="container">
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dots"><span></span><span></span><span></span></div>
+      <div class="terminal-title">fashionstudio — features</div>
+    </div>
+    <div class="terminal-body mono">
+      <div><span class="cmd">$ AI Banner Creator</span></div>
+      <div class="desc">Tạo banner quảng cáo thời trang từ ảnh sản phẩm + prompt. Hỗ trợ 5 tỷ lệ khung hình, batch processing.</div>
+      <br>
+      <div><span class="cmd">$ AI Image Extraction</span></div>
+      <div class="desc">Tách sản phẩm khỏi nền, nhận diện từng món đồ riêng biệt bằng AI. Export PNG trong suốt.</div>
+      <br>
+      <div><span class="cmd">$ Video Lookbook Studio</span></div>
+      <div class="desc">Tạo video lookbook từ ảnh tĩnh bằng Google Veo 3. Chọn góc quay, chuyển cảnh, hiệu ứng chuyên nghiệp.</div>
+      <br>
+      <div><span class="cmd">$ Smart Prompt Engine</span></div>
+      <div class="desc">Hệ thống prompt 4 lớp tự động — phân tích sản phẩm, chọn phong cách, tối ưu chi tiết, xuất ảnh chất lượng cao.</div>
+      <br>
+      <div><span class="cmd">$ Multi-Provider API</span></div>
+      <div class="desc">Tích hợp Gemini 3, GPT Image 2, DALL-E 3. Tự do chọn engine phù hợp với nhu cầu và ngân sách.</div>
+      <br>
+      <div style="color:var(--accent)">$ _</div>
+    </div>
+  </div>
+  <div class="tags">
+    <span class="tag">🎨 Banner Creator</span>
+    <span class="tag">✂️ Image Extraction</span>
+    <span class="tag">🎬 Video Studio</span>
+    <span class="tag">🔥 4K Upscale</span>
+    <span class="tag">🌍 Đa ngôn ngữ</span>
+    <span class="tag">🌙 Dark/Light Mode</span>
+    <span class="tag">☁️ Cloud Sync</span>
+  </div>
+</div>
+</section>
+
+<!-- AI MODELS -->
+<section class="section" id="models">
+<div class="container">
+  <div class="section-title">5+ AI Models</div>
+  <div class="section-sub" data-vi="Chọn mô hình phù hợp với phong cách sáng tạo của bạn" data-en="Choose the model that fits your creative needs">Chọn mô hình phù hợp với phong cách sáng tạo của bạn</div>
+  <div class="models-grid">
+    <div class="model-pill"><span class="badge" style="background:#10b981;color:#000">FAST</span>🍌 Nano Banana 2</div>
+    <div class="model-pill"><span class="badge" style="background:var(--accent);color:#fff">PRO</span>🍌 Nano Banana Pro</div>
+    <div class="model-pill"><span class="badge" style="background:var(--orange);color:#000">FLASH</span>⚡ Gemini 3 Flash</div>
+    <div class="model-pill"><span class="badge" style="background:var(--pink);color:#fff">GPT</span>🎨 GPT Image 2</div>
+    <div class="model-pill"><span class="badge" style="background:#6366f1;color:#fff">DALL-E</span>🖼️ DALL-E 3</div>
+    <div class="model-pill"><span class="badge" style="background:#ef4444;color:#fff">VIDEO</span>🎬 Google Veo 3</div>
+  </div>
+</div>
+</section>
+
+<!-- FLOW -->
+<section class="section" id="flow">
+<div class="container">
+  <div class="section-title" data-vi="Quy trình tạo ảnh AI" data-en="AI Image Creation Workflow">Quy trình tạo ảnh AI</div>
+  <div class="section-sub" data-vi="Từ ý tưởng đến sản phẩm hoàn chỉnh chỉ trong 30 giây" data-en="From idea to finished product in just 30 seconds">Từ ý tưởng đến sản phẩm hoàn chỉnh chỉ trong 30 giây</div>
+  <div class="flow">
+    <div class="flow-step"><div class="icon">📸</div><div class="step-num">01</div><div class="step-label">Upload ảnh sản phẩm</div><div class="step-desc">Kéo thả hoặc paste</div></div>
+    <div class="flow-step"><div class="icon">✍️</div><div class="step-num">02</div><div class="step-label">Nhập prompt</div><div class="step-desc">Hoặc dùng auto-prompt</div></div>
+    <div class="flow-step"><div class="icon">🤖</div><div class="step-num">03</div><div class="step-label">Chọn AI Model</div><div class="step-desc">5+ engines tuỳ chọn</div></div>
+    <div class="flow-step"><div class="icon">⚡</div><div class="step-num">04</div><div class="step-label">AI xử lý</div><div class="step-desc">~15-30 giây</div></div>
+    <div class="flow-step"><div class="icon">💎</div><div class="step-num">05</div><div class="step-label">Tải về & Chia sẻ</div><div class="step-desc">PNG / Video HD</div></div>
+  </div>
+</div>
+</section>
+
+<!-- BENEFITS -->
+<section class="section">
+<div class="container">
+  <div class="section-title" data-vi="Tại sao chọn FashionStudio AI?" data-en="Why FashionStudio AI?">Tại sao chọn FashionStudio AI?</div>
+  <div class="section-sub" data-vi="Được thiết kế bởi người trong ngành, cho người trong ngành" data-en="Built by industry insiders, for industry insiders">Được thiết kế bởi người trong ngành, cho người trong ngành</div>
+  <div class="benefits">
+    <div class="benefit-card"><div class="b-icon">💰</div><h3>Tiết kiệm 90% chi phí</h3><p>Không cần thuê photographer, studio, designer. Một công cụ thay thế cả team sản xuất ảnh truyền thống.</p></div>
+    <div class="benefit-card"><div class="b-icon">⚡</div><h3>Nhanh hơn 50x</h3><p>Từ 2 ngày chụp + hậu kỳ xuống còn 30 giây. Batch processing hàng trăm ảnh cùng lúc.</p></div>
+    <div class="benefit-card"><div class="b-icon">🎯</div><h3>Chuyên biệt cho Fashion</h3><p>Prompt engine được huấn luyện riêng cho ngành thời trang — hiểu vải, form dáng, phong cách, xu hướng.</p></div>
+    <div class="benefit-card"><div class="b-icon">🔐</div><h3>Bảo mật dữ liệu</h3><p>API key riêng của bạn, dữ liệu không qua server trung gian. Mã nguồn minh bạch trên GitHub.</p></div>
+    <div class="benefit-card"><div class="b-icon">📱</div><h3>Responsive mọi thiết bị</h3><p>Hoạt động mượt mà trên Desktop, Tablet, Mobile. Progressive Web App — cài như ứng dụng native.</p></div>
+    <div class="benefit-card"><div class="b-icon">🌍</div><h3>Đa ngôn ngữ</h3><p>Hỗ trợ Tiếng Việt và English. Tạo nội dung quảng cáo bằng cả 2 ngôn ngữ cùng lúc.</p></div>
+  </div>
+</div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+<div class="container">
+  <div class="cta-box">
+    <h2 data-vi="Bắt đầu tạo ảnh thời trang AI ngay hôm nay" data-en="Start creating AI fashion images today">Bắt đầu tạo ảnh thời trang AI ngay hôm nay</h2>
+    <p data-vi="Đăng ký miễn phí — không cần thẻ tín dụng. Mang API key của bạn, sử dụng không giới hạn." data-en="Sign up free — no credit card required. Bring your own API key, use unlimited.">Đăng ký miễn phí — không cần thẻ tín dụng. Mang API key của bạn, sử dụng không giới hạn.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a href="https://fashion.breaths.live" class="btn btn-primary"><span class="material-symbols-outlined">auto_awesome</span> Dùng ngay miễn phí</a>
+      <a href="https://cal.com/victorchuyen/coachai" class="btn btn-outline"><span class="material-symbols-outlined">support_agent</span> Tư vấn 1:1</a>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- SUPPORT -->
+<section class="support" id="support">
+<div class="container">
+  <div class="section-title" style="font-size:24px" data-vi="Hỗ trợ & Cộng đồng" data-en="Support & Community">Hỗ trợ & Cộng đồng</div>
+  <div class="section-sub" data-vi="Tham gia cộng đồng 24/7 — được hỗ trợ trực tiếp bởi Admin" data-en="Join the 24/7 community — direct support from Admin">Tham gia cộng đồng 24/7 — được hỗ trợ trực tiếp bởi Admin</div>
+  <div class="support-grid">
+    <a href="https://www.facebook.com/groups/vibecodecoaching" target="_blank" class="support-card"><div class="s-icon" style="background:#1877f2;color:#fff">f</div><div><div class="s-label">Facebook Group</div><div class="s-value">Vibe Code Coaching</div></div></a>
+    <a href="https://zalo.me/g/tdhmtu261" target="_blank" class="support-card"><div class="s-icon" style="background:#0068ff;color:#fff">Z</div><div><div class="s-label">Zalo Group</div><div class="s-value">Cộng đồng hỗ trợ</div></div></a>
+    <a href="https://t.me/vibecodocoaching" target="_blank" class="support-card"><div class="s-icon" style="background:#26a5e4;color:#fff">✈</div><div><div class="s-label">Telegram Group</div><div class="s-value">Vibe Code Coaching</div></div></a>
+    <a href="https://t.me/victorchuyen" target="_blank" class="support-card"><div class="s-icon" style="background:#26a5e4;color:#fff">✈</div><div><div class="s-label">Telegram Admin</div><div class="s-value">@victorchuyen</div></div></a>
+    <a href="https://zalo.me/0989890022" target="_blank" class="support-card"><div class="s-icon" style="background:#0068ff;color:#fff">Z</div><div><div class="s-label">Zalo / Viber / Whatsapp</div><div class="s-value">0989 890 022</div></div></a>
+    <a href="mailto:support@coach.io.vn" class="support-card"><div class="s-icon" style="background:var(--primary);color:#fff">✉</div><div><div class="s-label">Email</div><div class="s-value">support@coach.io.vn</div></div></a>
+    <a href="https://cal.com/victorchuyen/coachai" target="_blank" class="support-card"><div class="s-icon" style="background:var(--green);color:#fff">📅</div><div><div class="s-label">Đặt lịch tư vấn</div><div class="s-value">cal.com/victorchuyen</div></div></a>
+    <a href="https://github.com/tncsharetool" target="_blank" class="support-card"><div class="s-icon" style="background:#333;color:#fff">⌨</div><div><div class="s-label">GitHub</div><div class="s-value">Victor Chuyen</div></div></a>
+  </div>
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+<div class="container">
+  <div class="f-brand">✦ FashionStudio AI</div>
+  <div class="f-desc">Nền tảng AI tạo ảnh thời trang chuyên nghiệp — Powered by Gemini & GPT</div>
+  <div class="f-links">
+    <a href="https://fashion.breaths.live">Ứng dụng</a>
+    <a href="https://github.com/tncsharetool">GitHub</a>
+    <a href="https://cal.com/victorchuyen/coachai">Tư vấn</a>
+    <a href="mailto:support@coach.io.vn">Liên hệ</a>
+  </div>
+  <div class="f-copy">© 2026 Victor Chuyen · FashionStudio AI · All Rights Reserved</div>
+</div>
+</footer>
+
+<script>
+let currentLang = localStorage.getItem('lp-lang') || 'vi';
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('lp-lang', lang);
+  document.querySelectorAll('.lang-toggle button').forEach(b => b.classList.toggle('active', b.textContent.trim() === (lang === 'vi' ? 'VN' : 'EN')));
+  document.querySelectorAll('[data-vi][data-en]').forEach(el => { el.innerHTML = el.getAttribute('data-' + lang); });
+  document.documentElement.lang = lang;
+}
+setLang(currentLang);
+</script>
+</body>
+</html>

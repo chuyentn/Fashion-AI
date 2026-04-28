@@ -1,16 +1,39 @@
-
 import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from './ThemeContext';
 
-export const Header = ({ title, backAction }: { title: string, backAction?: () => void }) => (
-  <header className="sticky top-0 z-40 bg-white/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-white/5 p-4 md:p-8 flex items-center gap-4 text-left shadow-sm">
-    {backAction && (
-      <button onClick={backAction} className="w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 flex items-center justify-center dark:text-white text-gray-900 transition-colors">
-        <span className="material-symbols-outlined">arrow_back</span>
-      </button>
-    )}
-    <h2 className="text-2xl font-black dark:text-white text-gray-900 tracking-tight">{title}</h2>
-  </header>
-);
+export const Header = ({ title, backAction }: { title: string, backAction?: () => void }) => {
+  const { i18n } = useTranslation();
+  const { theme, toggleTheme } = useTheme();
+
+  const toggleLanguage = () => {
+    i18n.changeLanguage(i18n.language === 'vi' ? 'en' : 'vi');
+  };
+
+  return (
+    <header className="sticky top-0 z-40 bg-white/90 dark:bg-[#110b18]/90 backdrop-blur-xl border-b border-gray-200 dark:border-white/[0.04] px-6 py-4 md:px-8 md:py-5 flex items-center justify-between text-left">
+      <div className="flex items-center gap-3">
+        {backAction && (
+          <button onClick={backAction} className="w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/[0.06] flex items-center justify-center text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all duration-200 active:scale-90">
+            <span className="material-symbols-outlined text-xl">arrow_back</span>
+          </button>
+        )}
+        <h2 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">{title}</h2>
+      </div>
+      
+      <div className="flex items-center gap-3">
+        <button onClick={toggleLanguage} className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.08] hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors shadow-sm dark:shadow-none" title={i18n.language === 'vi' ? 'Switch to English' : 'Chuyển sang Tiếng Việt'}>
+          {i18n.language === 'vi' ? '🇻🇳' : '🇺🇸'}
+        </button>
+        <button onClick={toggleTheme} className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.08] hover:bg-gray-100 dark:hover:bg-white/[0.06] transition-colors text-gray-600 dark:text-gray-400 shadow-sm dark:shadow-none" title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}>
+          <span className="material-symbols-outlined text-[20px]">
+            {theme === 'dark' ? 'light_mode' : 'dark_mode'}
+          </span>
+        </button>
+      </div>
+    </header>
+  );
+};
 
 export const ImageLightbox = ({ src, onClose }: { src: string | null, onClose: () => void }) => {
   if (!src) return null;

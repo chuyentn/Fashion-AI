@@ -1,7 +1,7 @@
 
 import { GoogleGenAI } from "@google/genai";
 import { ImageFile, GeneratedImage, FaceHideType, ModelTier, AspectRatio, TextLanguage, FontStyleKey, DetectedItem } from "../types";
-import { GEMINI_MODELS, getGeminiImageModel } from "./apiSettings";
+import { GEMINI_MODELS, getGeminiImageModel, AuthMode, DEFAULT_API_BASE_URL, hasValidAuth } from "./apiSettings";
 
 // Model mapping — April 2026 latest
 // BASIC -> gemini-3.1-flash-image-preview (Nano Banana 2 — fast, cheap)

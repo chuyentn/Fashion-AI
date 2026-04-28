@@ -5,40 +5,91 @@
 
 @layer base {
   :root {
+    /* Color Tokens - Studio Dark (Brand Guardian & UI Designer) */
     --primary: 164, 19, 236; /* #a413ec */
-    --primary-hover: 176, 44, 237; /* #b02ced */
+    --primary-light: 176, 44, 237; /* #b02ced */
+    --primary-dark: 130, 15, 180;
+    
+    --surface-bg: 17, 11, 24;      /* #110b18 */
+    --surface-card: 26, 16, 37;    /* #1a1025 */
+    --surface-overlay: 37, 24, 53; /* #251835 */
+    
+    --text-primary: 255, 255, 255;
+    --text-secondary: 156, 163, 175; /* Gray-400 */
+    --text-muted: 75, 85, 99;       /* Gray-600 */
+    
+    /* Spacing Tokens (4px Scale) */
+    --space-1: 0.25rem; /* 4px */
+    --space-2: 0.5rem;  /* 8px */
+    --space-3: 0.75rem; /* 12px */
+    --space-4: 1rem;    /* 16px */
+    --space-6: 1.5rem;  /* 24px */
+    --space-8: 2rem;    /* 32px */
+    --space-12: 3rem;   /* 48px */
+    --space-16: 4rem;   /* 64px */
+
+    /* Typography (UX Architect) */
+    --font-primary: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   body {
-    @apply font-sans selection:bg-primary/20;
+    @apply font-sans selection:bg-primary/30 bg-[#f7f6f8] dark:bg-[#110b18] text-gray-900 dark:text-white;
     overscroll-behavior-y: none;
-    touch-action: manipulation;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* Custom Transitions */
-  * {
-    @apply transition-colors duration-200;
+  /* Smooth Transitions */
+  a, button, input, select, .card-hover {
+    @apply transition-all duration-300 ease-out;
   }
 }
 
 @layer components {
+  /* Button System (UI Designer) */
+  .btn-base {
+    @apply inline-flex items-center justify-center font-black rounded-2xl active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:pointer-events-none uppercase tracking-widest text-[11px];
+  }
+
   .btn-primary {
-    @apply bg-primary text-white font-black px-6 py-3 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all;
+    @apply btn-base bg-gradient-to-r from-[#a413ec] to-[#b02ced] text-white px-6 py-3.5 shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:scale-[1.02];
+  }
+
+  .btn-secondary {
+    @apply btn-base bg-white dark:bg-white/[0.04] border border-gray-200 dark:border-white/[0.08] text-gray-700 dark:text-white px-6 py-3.5 hover:bg-gray-50 dark:hover:bg-white/[0.08] hover:border-gray-300 dark:hover:border-white/20 shadow-sm dark:shadow-none;
+  }
+
+  .btn-ghost {
+    @apply btn-base text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/[0.04] px-4 py-2;
   }
   
-  .glass-card {
-    @apply bg-white/80 dark:bg-surface-card/80 backdrop-blur-xl border border-white/20 dark:border-white/5;
+  /* Panel & Card System (UI Designer) */
+  .glass-panel {
+    @apply bg-white/80 dark:bg-white/[0.03] backdrop-blur-2xl border border-white dark:border-white/[0.06] shadow-sm dark:shadow-none;
+  }
+
+  .card-premium {
+    @apply bg-white dark:bg-[#1a1025] border border-gray-100 dark:border-white/[0.08] rounded-[32px] overflow-hidden hover:border-primary/30 dark:hover:border-primary/30 hover:shadow-xl hover:shadow-primary/5 dark:hover:shadow-primary/10 transition-all duration-500 shadow-sm dark:shadow-none;
+  }
+
+  /* Form System (UI Designer) */
+  .input-studio {
+    @apply bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/[0.08] rounded-2xl px-4 py-3.5 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-600 outline-none focus:border-primary/50 focus:bg-white dark:focus:bg-white/[0.04] focus:ring-4 focus:ring-primary/10 transition-all shadow-sm dark:shadow-none;
+  }
+
+  /* Layout Containers (UX Architect) */
+  .studio-container {
+    @apply w-full max-w-[1700px] mx-auto px-6 md:px-10;
   }
 }
 
 /* Animations */
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(40px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-40px); }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -48,38 +99,44 @@
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.9); }
+  from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
 }
 
-@keyframes float {
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-  100% { transform: translateY(0px); }
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
 }
 
-/* Scrollbar Customization */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Global Utilities */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.bg-studio {
+  background: radial-gradient(circle at 50% 0%, rgba(164, 19, 236, 0.12) 0%, transparent 70%),
+              radial-gradient(circle at 0% 100%, rgba(236, 72, 153, 0.08) 0%, transparent 50%),
+              #110b18;
 }
 
-/* Custom Shadows */
-.shadow-premium {
-  box-shadow: 0 25px 50px -12px rgba(164, 19, 236, 0.15);
+.text-gradient-primary {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-[#a413ec] to-[#ec4899];
 }
 
-.dark .shadow-premium {
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-}
-
-/* Layout Utilities */
-.studio-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 2rem;
-}
+.animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
+.animate-slideUp { animation: slideUp 0.5s ease-out forwards; }
+.animate-scaleIn { animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
