@@ -28,19 +28,32 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
   const { t } = useTranslation();
 
   // === LOAD IMAGE (from file) ===
-  const loadImageAndDetect = async (img: ImageFile) => {
+  const loadImage = (img: ImageFile) => {
     setSelectedImage(img);
     setDetectedItems([]);
     setExtractedImages([]);
     setSavingIds(new Set());
     setSavedIds(new Set());
+  };
+
+  const loadImageAndDetect = async (img: ImageFile) => {
+    if (img !== selectedImage) {
+      setSelectedImage(img);
+      setDetectedItems([]);
+      setExtractedImages([]);
+      setSavingIds(new Set());
+      setSavedIds(new Set());
+    }
 
     setIsDetecting(true);
     try {
       const items = await detectClothingItems(img, apiSettings);
+      if (items.length === 0) {
+        alert("Không phát hiện vật thể nào. Hãy thử ảnh rõ hơn hoặc nhấn 'Nhận diện lại'.");
+      }
       setDetectedItems(items.map(it => ({ ...it, status: 'idle' as const })));
     } catch (err) {
-      alert("Lỗi nhận diện vật thể.");
+      alert("Lỗi nhận diện vật thể. Kiểm tra API Key trong Cài đặt.");
     } finally {
       setIsDetecting(false);
     }
@@ -57,7 +70,7 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
         base64,
         mimeType: file.type
       };
-      await loadImageAndDetect(img);
+      loadImage(img);
     }
   };
 
@@ -75,7 +88,7 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
         mimeType
       };
       setImageUrl('');
-      await loadImageAndDetect(img);
+      loadImage(img);
     } catch (err: any) {
       alert(err.message || "Lỗi tải ảnh từ URL.");
     } finally {
@@ -239,23 +252,65 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
                 />
               </div>
 
-              {/* Detected Items */}
+              {/* === MAIN ACTION BUTTONS === */}
               {selectedImage && (
-                <div className="mt-6 animate-slideUp">
-                  <div className="flex justify-between items-center mb-4">
-                    <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest">Phát hiện vật thể</label>
-                    {detectedItems.length > 0 && (
-                      <button onClick={handleAutoExtractAll} className="text-[10px] font-black text-emerald-500 uppercase tracking-widest hover:underline flex items-center gap-1">
-                        <span className="material-symbols-outlined text-sm">play_arrow</span>
-                        Tách tất cả
-                      </button>
+                <div className="mt-6 space-y-4 animate-slideUp">
+
+                  {/* Big Detect Button — Always visible */}
+                  <button
+                    onClick={() => loadImageAndDetect(selectedImage)}
+                    disabled={isDetecting}
+                    className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider flex items-center justify-center gap-3 transition-all duration-300 shadow-lg ${
+                      isDetecting
+                        ? 'bg-gray-200 dark:bg-white/10 text-gray-400 cursor-wait'
+                        : detectedItems.length > 0
+                          ? 'bg-gray-100 dark:bg-white/[0.04] text-gray-600 dark:text-gray-400 hover:bg-emerald-500/10 hover:text-emerald-500 border border-gray-200 dark:border-white/10'
+                          : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white hover:shadow-xl hover:shadow-emerald-500/25 hover:-translate-y-0.5'
+                    }`}
+                  >
+                    {isDetecting ? (
+                      <>
+                        <span className="material-symbols-outlined text-xl animate-spin">progress_activity</span>
+                        Đang nhận diện AI...
+                      </>
+                    ) : detectedItems.length > 0 ? (
+                      <>
+                        <span className="material-symbols-outlined text-xl">refresh</span>
+                        Nhận diện lại
+                      </>
+                    ) : (
+                      <>
+                        <span className="material-symbols-outlined text-xl">search</span>
+                        🔍 Nhận diện vật thể
+                      </>
                     )}
-                  </div>
+                  </button>
+
+                  {/* Big Extract All Button — Visible when items detected */}
+                  {detectedItems.length > 0 && detectedItems.some(it => it.status === 'idle') && (
+                    <button
+                      onClick={handleAutoExtractAll}
+                      className="w-full py-4 rounded-2xl bg-gradient-to-r from-primary to-pink-500 text-white font-black text-sm uppercase tracking-wider flex items-center justify-center gap-3 hover:shadow-xl hover:shadow-primary/25 hover:-translate-y-0.5 transition-all duration-300 shadow-lg"
+                    >
+                      <span className="material-symbols-outlined text-xl">content_cut</span>
+                      ✂️ Tách tất cả ({detectedItems.filter(it => it.status === 'idle').length} món)
+                    </button>
+                  )}
+
+                  {/* Detected Items List */}
+                  {(detectedItems.length > 0 || isDetecting) && (
+                    <div>
+                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">
+                        Phát hiện: {detectedItems.length} vật thể
+                      </label>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     {isDetecting ? (
-                      <div className="py-8 text-center">
-                        <div className="w-10 h-10 border-3 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3"></div>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase animate-pulse">Đang nhận diện AI...</p>
+                      <div className="py-6 text-center">
+                        <div className="w-10 h-10 border-[3px] border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3"></div>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase animate-pulse">Đang phân tích ảnh...</p>
                       </div>
                     ) : detectedItems.map((item, i) => (
                       <div key={i} className="flex items-center justify-between p-3.5 bg-gray-50 dark:bg-white/[0.02] border border-gray-100 dark:border-white/[0.04] rounded-xl group hover:border-emerald-500/30 transition-all">
