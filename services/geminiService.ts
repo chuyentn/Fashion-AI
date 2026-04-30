@@ -108,7 +108,7 @@ export async function callGeminiAPI(
     model: string,
     contents: any,
     config: any,
-    settings: { authMode: AuthMode, baseUrl: string, bearerToken?: string, cookieString?: string }
+    settings: { authMode: AuthMode, baseUrl: string }
 ) {
     // Mode 1: API KEY + Default URL -> Use Official SDK
     if (settings.authMode === 'apikey' && settings.baseUrl === DEFAULT_API_BASE_URL) {
@@ -127,7 +127,7 @@ export async function callGeminiAPI(
         // Use specialized methods if needed, but for now we generalize to raw fetch for anything complex
     }
 
-    // Mode 2 & 3: Bearer/Cookie or Custom URL -> Use Raw Fetch
+    // Mode 2: Custom URL -> Use Raw Fetch
     const endpoint = `${settings.baseUrl}/v1beta/models/${model}:generateContent`;
     const headers: Record<string, string> = {
         'Content-Type': 'application/json',
@@ -135,10 +135,6 @@ export async function callGeminiAPI(
 
     if (settings.authMode === 'apikey') {
         headers['x-goog-api-key'] = apiKey;
-    } else if (settings.authMode === 'bearer') {
-        headers['Authorization'] = `Bearer ${settings.bearerToken}`;
-    } else if (settings.authMode === 'cookie') {
-        headers['Cookie'] = settings.cookieString || '';
     }
 
     const response = await fetch(endpoint, {
@@ -180,9 +176,7 @@ export const generateFashionShots = async (
   apiSettings: { 
     geminiKey: string, 
     authMode: AuthMode, 
-    baseUrl: string, 
-    bearerToken?: string, 
-    cookieString?: string 
+    baseUrl: string
   },
   onImageGenerated?: (img: GeneratedImage) => void
 ): Promise<GeneratedImage[]> => {

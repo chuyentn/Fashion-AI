@@ -1,9 +1,9 @@
 
 // API Settings storage module — localStorage persistence
 // Supports: Gemini (Image + Video), OpenAI (GPT Image 2), and KIE Marketplace
-// Auth Modes: API Key | Bearer Token (Labs Ultra) | Cookie Session
+// Auth Modes: API Key
 
-export type AuthMode = 'apikey' | 'bearer' | 'cookie';
+export type AuthMode = 'apikey';
 
 export interface ApiSettings {
   // Auth mode selection
@@ -16,13 +16,6 @@ export interface ApiSettings {
   // OpenAI — used for GPT Image 2
   openaiKey: string;
   openaiModel: 'gpt-image-2' | 'dall-e-3';
-
-  // Bearer Token — from Google Ultra account (ya29.a0...)
-  bearerToken: string;
-  googleProjectId: string;
-
-  // Cookie Session — from Labs.Google session
-  cookieString: string;
 
   // Base URL — configurable endpoint
   // Default: Google AI Studio API
@@ -79,9 +72,6 @@ const DEFAULT_SETTINGS: ApiSettings = {
   geminiModel: 'fast',    // Default to Nano Banana 2 (fast + cheap)
   openaiKey: import.meta.env?.VITE_API_KEY || '',
   openaiModel: 'gpt-image-2',
-  bearerToken: '',
-  googleProjectId: '',
-  cookieString: '',
   baseUrl: DEFAULT_API_BASE_URL,
   videoEnabled: false,
   videoModel: 'standard',
@@ -97,15 +87,7 @@ const DEFAULT_SETTINGS: ApiSettings = {
 
 // Helper: get defaults based on auth mode
 export function getModeAwareDefaults(mode: AuthMode): Partial<ApiSettings> {
-  switch (mode) {
-    case 'apikey':
-      return { baseUrl: DEFAULT_API_BASE_URL, geminiModel: 'fast' };
-    case 'bearer':
-    case 'cookie':
-      return { baseUrl: LABS_GOOGLE_BASE_URL, geminiModel: 'pro' }; // Labs usually gives Pro
-    default:
-      return {};
-  }
+  return { baseUrl: DEFAULT_API_BASE_URL, geminiModel: 'fast' };
 }
 
 
@@ -140,16 +122,7 @@ export function getVeoModel(tier: 'standard' | 'lite'): string {
 
 // Helper: get the effective API key based on auth mode
 export function getEffectiveApiKey(settings: ApiSettings): string {
-  switch (settings.authMode) {
-    case 'apikey':
-      return settings.geminiKey;
-    case 'bearer':
-      return settings.bearerToken;
-    case 'cookie':
-      return settings.cookieString;
-    default:
-      return settings.geminiKey;
-  }
+  return settings.geminiKey;
 }
 
 // Helper: check if a Gemini key looks valid
@@ -160,16 +133,6 @@ export function isValidGeminiKey(key: string): boolean {
 // Helper: check if an OpenAI key looks valid
 export function isValidOpenAIKey(key: string): boolean {
   return key.trim().length > 10 && key.trim().startsWith('sk-');
-}
-
-// Helper: check if a Bearer token looks valid
-export function isValidBearerToken(token: string): boolean {
-  return token.trim().length > 20 && token.trim().startsWith('ya29.');
-}
-
-// Helper: check if Cookie string looks valid
-export function isValidCookieString(cookie: string): boolean {
-  return cookie.trim().length > 20;
 }
 
 // Helper: check if a KIE API key looks valid (32-char hex)
@@ -185,26 +148,12 @@ export function maskApiKey(key: string): string {
 
 // Helper: check if any auth is configured
 export function hasValidAuth(settings: ApiSettings): boolean {
-  switch (settings.authMode) {
-    case 'apikey':
-      return isValidGeminiKey(settings.geminiKey);
-    case 'bearer':
-      return isValidBearerToken(settings.bearerToken);
-    case 'cookie':
-      return isValidCookieString(settings.cookieString);
-    default:
-      return false;
-  }
+  return isValidGeminiKey(settings.geminiKey);
 }
 
 // Helper: get auth mode display name
 export function getAuthModeLabel(mode: AuthMode): string {
-  switch (mode) {
-    case 'apikey': return 'API Key (Google AI Studio)';
-    case 'bearer': return 'Bearer Token (Labs Ultra)';
-    case 'cookie': return 'Cookie Session (Labs)';
-    default: return 'Unknown';
-  }
+  return 'API Key (Google AI Studio)';
 }
 
 // ========================================
@@ -213,35 +162,17 @@ export function getAuthModeLabel(mode: AuthMode): string {
 
 export async function verifyGeminiKey(settings: ApiSettings): Promise<{ ok: boolean; message: string }> {
   try {
-    if (settings.authMode === 'apikey') {
-      if (!settings.geminiKey) return { ok: false, message: 'Chưa nhập Gemini API Key.' };
-      
-      const url = `${settings.baseUrl}/v1beta/models?key=${settings.geminiKey}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const data = await res.json();
-        const modelCount = data.models?.length || 0;
-        return { ok: true, message: `✅ Kết nối thành công! ${modelCount} models khả dụng.` };
-      } else {
-        const err = await res.json().catch(() => ({}));
-        return { ok: false, message: `❌ API Key không hợp lệ: ${err.error?.message || res.statusText}` };
-      }
-    } else if (settings.authMode === 'bearer') {
-      if (!settings.bearerToken) return { ok: false, message: 'Chưa nhập Bearer Token.' };
-      
-      const url = `${settings.baseUrl}/v1beta/models`;
-      const res = await fetch(url, {
-        headers: { 'Authorization': `Bearer ${settings.bearerToken}` }
-      });
-      if (res.ok) {
-        return { ok: true, message: '✅ Bearer Token hợp lệ! Kết nối Labs.Google thành công.' };
-      } else {
-        return { ok: false, message: `❌ Bearer Token không hợp lệ hoặc hết hạn. Status: ${res.status}` };
-      }
+    if (!settings.geminiKey) return { ok: false, message: 'Chưa nhập Gemini API Key.' };
+    
+    const url = `${settings.baseUrl}/v1beta/models?key=${settings.geminiKey}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      const modelCount = data.models?.length || 0;
+      return { ok: true, message: `✅ Kết nối thành công! ${modelCount} models khả dụng.` };
     } else {
-      // Cookie mode — basic check
-      if (!settings.cookieString) return { ok: false, message: 'Chưa nhập Cookie.' };
-      return { ok: true, message: '⚠️ Cookie đã lưu. Không thể verify trực tiếp từ browser (CORS).' };
+      const err = await res.json().catch(() => ({}));
+      return { ok: false, message: `❌ API Key không hợp lệ: ${err.error?.message || res.statusText}` };
     }
   } catch (e: any) {
     return { ok: false, message: `❌ Lỗi kết nối: ${e.message}` };
@@ -299,7 +230,7 @@ export function exportProject(settings: ApiSettings): string {
   const project: ProjectExport = {
     version: '1.0',
     exportedAt: new Date().toISOString(),
-    settings: { ...settings, geminiKey: '', openaiKey: '', bearerToken: '', cookieString: '' }, // Don't export secrets
+    settings: { ...settings, geminiKey: '', openaiKey: '' }, // Don't export secrets
   };
   return JSON.stringify(project, null, 2);
 }
@@ -316,8 +247,6 @@ export function importProject(json: string): ApiSettings | null {
         // Keep current secrets — don't overwrite with empty
         geminiKey: current.geminiKey,
         openaiKey: current.openaiKey,
-        bearerToken: current.bearerToken,
-        cookieString: current.cookieString,
       };
     }
     return null;

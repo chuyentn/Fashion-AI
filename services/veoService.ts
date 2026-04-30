@@ -8,8 +8,6 @@ export interface VideoGenerationConfig {
     geminiKey: string;
     authMode: AuthMode;
     baseUrl: string;
-    bearerToken?: string;
-    cookieString?: string;
     videoModel: 'standard' | 'lite';
   };
   aspectRatio?: '16:9' | '9:16';
@@ -75,15 +73,13 @@ export async function generateVideo(
     }
   }
 
-  // --- REST MODE (Bearer / Cookie / Custom URL) ---
+  // --- REST MODE (Custom URL) ---
   try {
     onProgress?.('Đang khởi tạo (REST)...');
     const endpoint = `${baseUrl}/v1beta/models/${model}:generateVideos`;
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
     
     if (authMode === 'apikey') headers['x-goog-api-key'] = apiKey;
-    else if (authMode === 'bearer') headers['Authorization'] = `Bearer ${apiSettings.bearerToken}`;
-    else if (authMode === 'cookie') headers['Cookie'] = apiSettings.cookieString || '';
 
     const body: any = {
       prompt,

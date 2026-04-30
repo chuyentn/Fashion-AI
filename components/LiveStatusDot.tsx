@@ -7,9 +7,7 @@ export const LiveStatusDot = ({ settings, type }: { settings: ApiSettings; type:
   const [msg, setMsg] = useState('');
   const timerRef = useRef<any>(null);
 
-  const credential = type === 'gemini'
-    ? (settings.authMode === 'apikey' ? settings.geminiKey : settings.authMode === 'bearer' ? settings.bearerToken : settings.cookieString)
-    : settings.openaiKey;
+  const credential = type === 'gemini' ? settings.geminiKey : settings.openaiKey;
 
   useEffect(() => {
     if (!credential || credential.length < 6) { setStatus('idle'); setMsg(''); return; }
@@ -25,7 +23,7 @@ export const LiveStatusDot = ({ settings, type }: { settings: ApiSettings; type:
       } catch { setStatus('dead'); setMsg('Lỗi kết nối'); }
     }, 1500);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [credential, settings.authMode, settings.baseUrl, settings.openaiBaseUrl]);
+  }, [credential, settings.baseUrl, settings.openaiBaseUrl]);
 
   if (status === 'idle') return null;
   return (

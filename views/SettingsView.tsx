@@ -11,9 +11,7 @@ import {
   verifyGeminiKey,
   verifyOpenAIKey,
   verifyKieKey,
-  isValidKieKey,
-  AuthMode,
-  getAuthModeLabel
+  isValidKieKey
 } from '../services/apiSettings';
 import { getTextToImageModels, getTextToVideoModels } from '../services/kieModels';
 import { supabase } from '../services/supabase';
@@ -58,27 +56,7 @@ export const SettingsView = ({ state, updateState, apiSettings, updateApiSetting
       <Header title={t('settings.title')} />
       <div className="p-6 md:p-10 max-w-4xl mx-auto space-y-10 pb-32 text-left relative z-10 studio-container">
         
-        {/* --- AUTH MODE SELECTION --- */}
-        <div className="card-premium rounded-[32px] p-6 md:p-8 animate-slideUp bg-white dark:bg-[#1a1025] border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-xl">
-          <div className="flex items-center gap-5 mb-6">
-            <div className="w-12 h-12 rounded-2xl bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-500">
-              <span className="material-symbols-outlined text-2xl">vpn_key</span>
-            </div>
-            <div>
-              <h3 className="font-black text-sm text-gray-900 dark:text-white uppercase tracking-wider">Cổng kết nối API</h3>
-              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Chọn phương thức xác thực hệ thống</p>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {(['apikey', 'bearer', 'cookie'] as AuthMode[]).map(mode => (
-              <button key={mode} onClick={() => updateApiSettings({ authMode: mode })}
-                className={`px-4 py-3 rounded-xl border-2 transition-all text-[10px] font-black uppercase tracking-widest ${apiSettings.authMode === mode ? 'border-primary bg-primary/10 text-primary' : 'border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/[0.02] text-gray-500 hover:bg-gray-100 dark:hover:bg-white/5'}`}>
-                {getAuthModeLabel(mode).split(' (')[0]}
-              </button>
-            ))}
-          </div>
-        </div>
+
 
         {/* --- GEMINI API SECTION --- */}
         <div className="card-premium rounded-[32px] p-6 md:p-10 animate-slideUp bg-white dark:bg-[#1a1025] border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-xl">
@@ -98,7 +76,7 @@ export const SettingsView = ({ state, updateState, apiSettings, updateApiSetting
               <label className="text-[10px] font-black text-gray-500 uppercase tracking-widest ml-1">{t('settings.apiKey')}</label>
               <div className="relative">
                 <input type="password" value={apiSettings.geminiKey}
-                  onChange={e => { updateApiSettings({ geminiKey: e.target.value, authMode: 'apikey', baseUrl: DEFAULT_API_BASE_URL }); }}
+                  onChange={e => { updateApiSettings({ geminiKey: e.target.value, baseUrl: DEFAULT_API_BASE_URL }); }}
                   placeholder={t('settings.apiKeyPlaceholder')} className="input-studio w-full font-mono pr-14" />
                 {apiSettings.geminiKey && (
                   <button onClick={() => updateApiSettings({ geminiKey: '' })} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-600 hover:text-red-400 transition-colors bg-gray-100 dark:bg-white/5 rounded-full p-1">
