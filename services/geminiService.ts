@@ -115,21 +115,17 @@ export async function callGeminiAPI(
     config: any,
     settings: { authMode: AuthMode, baseUrl: string }
 ) {
-    // Mode 1: API KEY + Default URL -> Use Official SDK
+    // Mode 1: API KEY + Default URL -> Use Official SDK for ALL calls
     if (settings.authMode === 'apikey' && settings.baseUrl === DEFAULT_API_BASE_URL) {
         const ai = new GoogleGenAI({ apiKey });
-        const modelInstance = ai.getGenerativeModel({ model });
         
-        // Use generateContent for images
-        if (config.imageConfig) {
-            return await ai.models.generateContent({
-                model,
-                contents,
-                config
-            });
-        }
-        
-        // Use specialized methods if needed, but for now we generalize to raw fetch for anything complex
+        // Use ai.models.generateContent for everything (text, image, JSON)
+        const result = await ai.models.generateContent({
+            model,
+            contents,
+            config: config || {}
+        });
+        return result;
     }
 
     // Mode 2: Custom URL -> Use Raw Fetch
@@ -546,7 +542,7 @@ export const detectClothingItems = async (
   image: ImageFile,
   apiSettings: ApiSettings
 ): Promise<{ label: string, description: string }[]> => {
-  const model = GEMINI_MODELS.FLASH;
+  const model = GEMINI_MODELS.TEXT_FAST;
   const { geminiKey: apiKey } = apiSettings;
 
   const prompt = `
