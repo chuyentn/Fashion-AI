@@ -525,3 +525,19 @@ export const generateBannerImage = async (
   }
   return null;
 };
+
+export const urlToBase64 = async (url: string): Promise<{ base64: string, mimeType: string }> => {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error("Không thể tải ảnh từ URL này.");
+  const blob = await response.blob();
+  const base64 = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      resolve(result.split(',')[1]);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+  return { base64, mimeType: blob.type };
+};

@@ -3,7 +3,7 @@ import { Header } from '../components/Common';
 import { ResourcePickerModal } from '../modals/LibraryModals';
 import { AppState, ImageFile, AdminResource, ModelTier, FaceHideType } from '../types';
 import { ApiSettings, saveApiSettings } from '../services/apiSettings';
-import { fileToBase64 } from '../services/geminiService';
+import { fileToBase64, urlToBase64 } from '../services/geminiService';
 import { useTranslation } from 'react-i18next';
 
 export const CreateShotView = ({ onBack, state, updateState, onGenerate, onOpenAdmin, apiSettings, setApiSettings }: { onBack: () => void, state: AppState, updateState: (k: Partial<AppState>) => void, onGenerate: () => void, onOpenAdmin: () => void, apiSettings: ApiSettings, setApiSettings: (s: ApiSettings) => void }) => {
@@ -11,6 +11,10 @@ export const CreateShotView = ({ onBack, state, updateState, onGenerate, onOpenA
   const prodInputRef = useRef<HTMLInputElement>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [pickerOpen, setPickerOpen] = useState<{ type: 'REFERENCE' | 'PRODUCT', isOpen: boolean }>({ type: 'REFERENCE', isOpen: false });
+  const [refUrl, setRefUrl] = useState('');
+  const [prodUrl, setProdUrl] = useState('');
+  const [isAddingRef, setIsAddingRef] = useState(false);
+  const [isAddingProd, setIsAddingProd] = useState(false);
   const { t } = useTranslation();
   
   const processFiles = async (fileList: File[], type: 'ref' | 'prod') => {
@@ -30,6 +34,37 @@ export const CreateShotView = ({ onBack, state, updateState, onGenerate, onOpenA
     if (validFiles.length === 0) return;
     if (type === 'ref') updateState({ referenceImages: [...state.referenceImages, ...validFiles].slice(0, 5) });
     else updateState({ productImages: [...state.productImages, ...validFiles] });
+  };
+
+  const handleAddUrl = async (type: 'ref' | 'prod') => {
+    const url = type === 'ref' ? refUrl : prodUrl;
+    if (!url) return;
+    
+    if (type === 'ref') setIsAddingRef(true);
+    else setIsAddingProd(true);
+
+    try {
+      const { base64, mimeType } = await urlToBase64(url);
+      const newFile: ImageFile = {
+        id: `url-${Date.now()}`,
+        file: null,
+        previewUrl: url,
+        base64,
+        mimeType
+      };
+      if (type === 'ref') {
+        updateState({ referenceImages: [...state.referenceImages, newFile].slice(0, 5) });
+        setRefUrl('');
+      } else {
+        updateState({ productImages: [...state.productImages, newFile] });
+        setProdUrl('');
+      }
+    } catch (err: any) {
+      alert(err.message || "Lỗi tải ảnh.");
+    } finally {
+      if (type === 'ref') setIsAddingRef(false);
+      else setIsAddingProd(false);
+    }
   };
 
   const handleLibrarySelect = async (res: AdminResource) => {
@@ -103,6 +138,24 @@ export const CreateShotView = ({ onBack, state, updateState, onGenerate, onOpenA
               </button>
             </>}
           />
+          
+          <div className="flex items-center gap-2 mb-6 max-w-xl">
+            <input 
+              type="text" 
+              placeholder="Dán link ảnh mẫu (Pinterest, Vogue...)" 
+              value={refUrl}
+              onChange={e => setRefUrl(e.target.value)}
+              className="flex-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3 text-sm outline-none focus:border-primary transition-all"
+            />
+            <button 
+              onClick={() => handleAddUrl('ref')}
+              disabled={isAddingRef || !refUrl}
+              className="h-12 px-6 bg-primary/10 text-primary rounded-2xl text-[11px] font-black uppercase tracking-wider hover:bg-primary hover:text-white transition-all disabled:opacity-50"
+            >
+              {isAddingRef ? '...' : 'Thêm'}
+            </button>
+          </div>
+
           {state.referenceImages.length > 0 ? (
             <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-1 px-1">
               {state.referenceImages.map((img, i) => (
@@ -150,6 +203,24 @@ export const CreateShotView = ({ onBack, state, updateState, onGenerate, onOpenA
               </button>
             </>}
           />
+          
+          <div className="flex items-center gap-2 mb-6 max-w-xl">
+            <input 
+              type="text" 
+              placeholder="Dán link ảnh sản phẩm..." 
+              value={prodUrl}
+              onChange={e => setProdUrl(e.target.value)}
+              className="flex-1 bg-white dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3 text-sm outline-none focus:border-pink-500 transition-all"
+            />
+            <button 
+              onClick={() => handleAddUrl('prod')}
+              disabled={isAddingProd || !prodUrl}
+              className="h-12 px-6 bg-pink-500/10 text-pink-500 rounded-2xl text-[11px] font-black uppercase tracking-wider hover:bg-pink-500 hover:text-white transition-all disabled:opacity-50"
+            >
+              {isAddingProd ? '...' : 'Thêm'}
+            </button>
+          </div>
+
           {state.productImages.length > 0 ? (
             <div className="flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-1 px-1">
               {state.productImages.map((img, i) => (

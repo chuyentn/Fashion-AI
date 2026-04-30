@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { Header } from '../components/Common';
-import { analyzeCampaignIntake, fileToBase64, generateBannerImage } from '../services/geminiService';
+import { analyzeCampaignIntake, fileToBase64, generateBannerImage, urlToBase64 } from '../services/geminiService';
 import { ProductIntakeResult, ImageFile, AppState } from '../types';
 
 export const ProductIntakeView = ({ state, onBack, updateState, apiSettings }: { state: AppState, onBack: () => void, updateState: (s: Partial<AppState>) => void, apiSettings: any }) => {
   const [urlInput, setUrlInput] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<ImageFile[]>([]);
+  const [imageUrl, setImageUrl] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isAddingUrl, setIsAddingUrl] = useState(false);
   const [batchStatus, setBatchStatus] = useState<{current: number, total: number} | null>(null);
   const [activeResultIndex, setActiveResultIndex] = useState<number>(-1);
   const [error, setError] = useState<string | null>(null);
@@ -37,6 +39,30 @@ export const ProductIntakeView = ({ state, onBack, updateState, apiSettings }: {
         }
       }
       setImages(prev => [...prev, ...newImages].slice(0, 4));
+    }
+  };
+
+  const handleAddImageUrl = async () => {
+    if (!imageUrl) return;
+    if (images.length >= 4) {
+      alert("Tối đa 4 ảnh.");
+      return;
+    }
+    setIsAddingUrl(true);
+    try {
+      const { base64, mimeType } = await urlToBase64(imageUrl);
+      setImages(prev => [...prev, {
+        id: `url-${Date.now()}`,
+        file: null,
+        previewUrl: imageUrl,
+        base64,
+        mimeType
+      }].slice(0, 4));
+      setImageUrl('');
+    } catch (err: any) {
+      alert(err.message || "Lỗi tải ảnh.");
+    } finally {
+      setIsAddingUrl(false);
     }
   };
 
@@ -163,6 +189,24 @@ export const ProductIntakeView = ({ state, onBack, updateState, apiSettings }: {
 
                 <div>
                   <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Ảnh tham chiếu (Tối đa 4: Product, Outfit, Model, BG)</label>
+                  
+                  <div className="flex items-center gap-2 mb-4">
+                    <input 
+                      type="text" 
+                      placeholder="Dán link ảnh trực tiếp..." 
+                      value={imageUrl}
+                      onChange={e => setImageUrl(e.target.value)}
+                      className="flex-1 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 text-xs outline-none focus:border-primary transition-colors"
+                    />
+                    <button 
+                      onClick={handleAddImageUrl}
+                      disabled={isAddingUrl || !imageUrl}
+                      className="h-9 px-4 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase tracking-wider hover:bg-primary hover:text-white transition-all disabled:opacity-50"
+                    >
+                      {isAddingUrl ? '...' : 'Thêm URL'}
+                    </button>
+                  </div>
+
                   <div className="flex flex-wrap gap-4">
                     {images.map(img => (
                       <div key={img.id} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 dark:border-white/10 group">
