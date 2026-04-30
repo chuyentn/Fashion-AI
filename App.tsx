@@ -45,6 +45,8 @@ const App: React.FC = () => {
     outputCount: 1,
     faceHideEnabled: false,
     faceHideType: 'PHONE_SELFIE',
+    intakeHistory: JSON.parse(localStorage.getItem('intakeHistory') || '[]'),
+    pendingVeoPayload: null,
   });
 
   const [apiSettings, setApiSettings] = useState<ApiSettings>(loadApiSettings());
@@ -71,6 +73,10 @@ const App: React.FC = () => {
     document.documentElement.className = state.theme;
     localStorage.setItem('theme', state.theme);
   }, [state.theme]);
+
+  useEffect(() => {
+    localStorage.setItem('intakeHistory', JSON.stringify(state.intakeHistory));
+  }, [state.intakeHistory]);
 
   useEffect(() => {
     setIsAuthLoading(true);
@@ -203,7 +209,7 @@ const App: React.FC = () => {
       case 'CREATE':
         return <CreateShotView onBack={() => updateState({ view: 'HOME' })} state={state} updateState={updateState} onGenerate={handleGenerate} onOpenAdmin={() => updateState({ view: 'ADMIN_PANEL' })} apiSettings={apiSettings} setApiSettings={setApiSettings} />;
       case 'INTAKE':
-        return <ProductIntakeView onBack={() => updateState({ view: 'HOME' })} apiSettings={apiSettings} />;
+        return <ProductIntakeView state={state} updateState={updateState} onBack={() => updateState({ view: 'HOME' })} apiSettings={apiSettings} />;
       case 'EXTRACT':
         return <ExtractGarmentView onBack={() => updateState({ view: 'HOME' })} userProfile={state.userProfile!} />;
       case 'LIBRARY':

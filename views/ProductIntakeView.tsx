@@ -1,16 +1,21 @@
 import React, { useState, useRef } from 'react';
 import { Header } from '../components/Common';
-import { analyzeCampaignIntake, fileToBase64 } from '../services/geminiService';
-import { ProductIntakeResult, ImageFile } from '../types';
+import { analyzeCampaignIntake, fileToBase64, generateBannerImage } from '../services/geminiService';
+import { ProductIntakeResult, ImageFile, AppState } from '../types';
 
-export const ProductIntakeView = ({ onBack, apiSettings }: { onBack: () => void, apiSettings: any }) => {
-  const [url, setUrl] = useState('');
+export const ProductIntakeView = ({ state, onBack, updateState, apiSettings }: { state: AppState, onBack: () => void, updateState: (s: Partial<AppState>) => void, apiSettings: any }) => {
+  const [urlInput, setUrlInput] = useState('');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<ImageFile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [result, setResult] = useState<ProductIntakeResult | null>(null);
+  const [batchStatus, setBatchStatus] = useState<{current: number, total: number} | null>(null);
+  const [activeResultIndex, setActiveResultIndex] = useState<number>(-1);
   const [error, setError] = useState<string | null>(null);
+  const [generatingBannerIndex, setGeneratingBannerIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const results = state.intakeHistory || [];
+  const result = activeResultIndex >= 0 ? results[activeResultIndex] : null;
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
@@ -40,19 +45,67 @@ export const ProductIntakeView = ({ onBack, apiSettings }: { onBack: () => void,
   };
 
   const handleAnalyze = async () => {
-    if (!url && !description && images.length === 0) {
+    const urls = urlInput.split(/[\n,]/).map(u => u.trim()).filter(u => u.length > 0);
+    
+    if (urls.length === 0 && !description && images.length === 0) {
       setError("Vui lòng nhập Link, Mô tả hoặc Upload ảnh sản phẩm.");
       return;
     }
+    
     setError(null);
     setIsProcessing(true);
+    
+    const newResults: ProductIntakeResult[] = [];
+    
     try {
-      const data = await analyzeCampaignIntake(url, description, images, apiSettings);
-      setResult(data);
+      if (urls.length > 1) {
+        setBatchStatus({ current: 0, total: urls.length });
+        for (let i = 0; i < urls.length; i++) {
+          setBatchStatus({ current: i + 1, total: urls.length });
+          const data = await analyzeCampaignIntake(urls[i], description, images, apiSettings);
+          newResults.push(data);
+        }
+      } else {
+        const data = await analyzeCampaignIntake(urls[0] || "", description, images, apiSettings);
+        newResults.push(data);
+      }
+      
+      const updatedHistory = [...newResults, ...results].slice(0, 50); // Keep last 50
+      updateState({ intakeHistory: updatedHistory });
+      setActiveResultIndex(0);
+      setBatchStatus(null);
+      setUrlInput('');
+      setDescription('');
+      setImages([]);
     } catch (err: any) {
       setError(err.message || "Lỗi phân tích.");
     } finally {
       setIsProcessing(false);
+    }
+  };
+
+  const handleSendToVideo = () => {
+    if (result?.veo_payload) {
+      updateState({ 
+        view: 'VIDEO', 
+        pendingVeoPayload: result.veo_payload 
+      });
+    }
+  };
+
+  const handleRenderBanner = async (banner: any, index: number) => {
+    if (!result) return;
+    setGeneratingBannerIndex(index);
+    try {
+      const img = await generateBannerImage(banner, result.product_metadata, images, apiSettings);
+      if (img) {
+         // We could save this to the result history but for now just show alert or preview
+         alert("Đã tạo xong ảnh banner! Bạn có thể xem trong Library.");
+      }
+    } catch (err) {
+      alert("Lỗi tạo ảnh banner.");
+    } finally {
+      setGeneratingBannerIndex(null);
     }
   };
 
@@ -89,13 +142,12 @@ export const ProductIntakeView = ({ onBack, apiSettings }: { onBack: () => void,
               
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Link Affiliate / Nguồn</label>
-                  <input 
-                    type="text" 
-                    placeholder="https://shopee.vn/... hoặc URL sản phẩm" 
-                    value={url}
-                    onChange={e => setUrl(e.target.value)}
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-primary outline-none transition-colors"
+                  <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">Link Affiliate / Nguồn (Dán nhiều link, mỗi link 1 dòng)</label>
+                  <textarea 
+                    placeholder="https://shopee.vn/...&#10;https://tiktok.com/..." 
+                    value={urlInput}
+                    onChange={e => setUrlInput(e.target.value)}
+                    className="w-full h-24 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-4 text-sm focus:border-primary outline-none transition-colors resize-none"
                   />
                 </div>
                 
@@ -139,10 +191,29 @@ export const ProductIntakeView = ({ onBack, apiSettings }: { onBack: () => void,
                   disabled={isProcessing}
                   className="w-full btn-primary py-4 text-sm mt-4 uppercase tracking-[2px]"
                 >
-                  {isProcessing ? 'Đang phân tích...' : 'Phân tích & Lên Concept'}
+                  {isProcessing ? (batchStatus ? `Đang xử lý (${batchStatus.current}/${batchStatus.total})...` : 'Đang phân tích...') : 'Phân tích & Lên Concept'}
                 </button>
               </div>
             </div>
+
+            {/* HISTORY LIST */}
+            {results.length > 0 && (
+              <div className="bg-white dark:bg-[#1a1025] border border-gray-200 dark:border-white/[0.08] rounded-[32px] p-8 shadow-xl">
+                <h3 className="text-sm font-black mb-4 uppercase tracking-wider text-gray-500">Lịch sử Chiến dịch ({results.length})</h3>
+                <div className="space-y-2 max-h-[400px] overflow-y-auto no-scrollbar pr-2">
+                  {results.map((item, idx) => (
+                    <div 
+                      key={idx} 
+                      onClick={() => setActiveResultIndex(idx)}
+                      className={`p-4 rounded-2xl cursor-pointer border transition-all ${activeResultIndex === idx ? 'bg-primary/10 border-primary' : 'bg-gray-50 dark:bg-white/[0.02] border-transparent hover:border-white/10'}`}
+                    >
+                      <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{item.product_metadata?.title || 'Không tên'}</p>
+                      <p className="text-[10px] text-gray-500 mt-1 uppercase tracking-widest">{item.product_metadata?.category} • {item.product_metadata?.price_segment}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* RIGHT: OUTPUT */}
@@ -183,7 +254,16 @@ export const ProductIntakeView = ({ onBack, apiSettings }: { onBack: () => void,
                         <div className={`absolute top-0 left-0 w-1 h-full ${banner.type === 'sale' ? 'bg-orange-500' : banner.type === 'editorial' ? 'bg-purple-500' : 'bg-pink-500'}`} />
                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-1 block">{banner.type}</span>
                         <p className="text-sm text-gray-900 dark:text-white font-medium mb-2">{banner.concept}</p>
-                        <p className="text-xs text-primary font-bold">CTA: {banner.cta}</p>
+                        <div className="flex justify-between items-center">
+                          <p className="text-xs text-primary font-bold">CTA: {banner.cta}</p>
+                          <button 
+                            onClick={() => handleRenderBanner(banner, i)}
+                            disabled={generatingBannerIndex !== null}
+                            className="text-[10px] font-bold uppercase text-pink-500 hover:text-pink-600 transition-colors flex items-center gap-1"
+                          >
+                            {generatingBannerIndex === i ? 'Đang render...' : '🎨 Render Ảnh'}
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -191,7 +271,16 @@ export const ProductIntakeView = ({ onBack, apiSettings }: { onBack: () => void,
 
                 {/* 3. VEO COMMAND */}
                 <div>
-                  <h3 className="text-sm font-black text-emerald-500 uppercase tracking-[2px] mb-4">3. Veo 3.1 Command (JSON)</h3>
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-sm font-black text-emerald-500 uppercase tracking-[2px]">3. Veo 3.1 Command (JSON)</h3>
+                    <button 
+                      onClick={handleSendToVideo}
+                      className="px-4 py-2 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500 hover:text-white transition-all flex items-center gap-2"
+                    >
+                      <span className="material-symbols-outlined text-sm">movie_filter</span>
+                      🪄 Đưa vào xưởng quay
+                    </button>
+                  </div>
                   <div className="relative group">
                     <textarea 
                       readOnly

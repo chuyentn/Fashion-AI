@@ -131,6 +131,8 @@ export interface AppState {
   
   generatedImages: GeneratedImage[];
   history: HistoryItem[];
+  intakeHistory: ProductIntakeResult[]; 
+  pendingVeoPayload: any | null; 
   activeHistoryItem?: HistoryItem;
   
   userProfile: UserProfile | null;

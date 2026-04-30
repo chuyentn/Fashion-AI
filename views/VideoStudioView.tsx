@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Header } from '../components/Common';
 import { AppState, VideoClip, VideoStructuredPrompt } from '../types';
 import { generateFashionVideo } from '../services/veoService';
@@ -21,6 +21,23 @@ export const VideoStudioView = ({ state, updateState, apiSettings }: { state: Ap
     voice: ''
   });
   const [showSettings, setShowSettings] = useState(false);
+
+  useEffect(() => {
+    if (state.pendingVeoPayload) {
+      const p = state.pendingVeoPayload;
+      setAdvancedSettings({
+        scenePrompt: p.scene?.context || p.scene?.setting || 'Model walking gracefully on a high-end fashion runway',
+        cameraAngle: p.scene?.camera || 'Default',
+        transition: 'None',
+        speed: 'Normal',
+        effects: p.scene?.lighting || 'None',
+        voice: p.audio?.trending_music_vibe || ''
+      });
+      setShowSettings(true);
+      // Consume the payload
+      updateState({ pendingVeoPayload: null });
+    }
+  }, [state.pendingVeoPayload, updateState]);
 
   const addClip = async (files: FileList | null) => {
     if (!files) return;

@@ -478,3 +478,50 @@ Schema bắt buộc:
     throw new Error("Lỗi parse JSON từ AI.");
   }
 };
+
+export const generateBannerImage = async (
+  banner: { type: string, concept: string, cta: string },
+  productInfo: any,
+  images: ImageFile[],
+  apiSettings: any,
+  onImageGenerated?: (img: GeneratedImage) => void
+): Promise<GeneratedImage | null> => {
+  const model = GEMINI_MODELS.IMAGE_PRO;
+  const { geminiKey: apiKey } = apiSettings;
+  
+  const prompt = `
+    TASK: Create a HIGH-CONVERSION FASHION MARKETING BANNER.
+    TYPE: ${banner.type.toUpperCase()}
+    CONCEPT: ${banner.concept}
+    TEXT TO RENDER (CTA): "${banner.cta}"
+    PRODUCT INFO: ${productInfo.title} (${productInfo.category})
+    
+    STYLE RULES:
+    - High-end studio lighting.
+    - Professional typography placement.
+    - Ensure the product is the hero.
+    - Commercial fashion aesthetic (like Zara, Vogue, or high-performing TikTok Shop ads).
+    - Render the CTA text clearly in a stylish font.
+  `;
+
+  const parts: any[] = [{ text: prompt }];
+  images.forEach(img => parts.push({ inlineData: { mimeType: img.mimeType, data: img.base64 } }));
+
+  try {
+    const res = await callGeminiAPI(apiKey, model, { parts }, { imageConfig: { aspectRatio: '9:16' } }, apiSettings);
+    const part = res.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+    if (part) {
+      const img = { 
+        id: `banner-${Date.now()}`, 
+        url: `data:image/png;base64,${part.inlineData.data}`, 
+        isLoading: false, 
+        label: `Banner: ${banner.type}` 
+      } as GeneratedImage;
+      if (onImageGenerated) onImageGenerated(img);
+      return img;
+    }
+  } catch (e) {
+    console.error("Banner generation failed", e);
+  }
+  return null;
+};
