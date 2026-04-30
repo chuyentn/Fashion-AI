@@ -240,23 +240,11 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
               </div>
               <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept="image/*" />
 
-              {/* Product Name */}
-              <div className="mt-6">
-                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Tên sản phẩm (Tùy chọn)</label>
-                <input
-                  type="text"
-                  placeholder="VD: Áo sơ mi lụa..."
-                  value={productName}
-                  onChange={e => setProductName(e.target.value)}
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3.5 text-sm focus:border-emerald-500 outline-none transition-colors"
-                />
-              </div>
-
-              {/* === MAIN ACTION BUTTONS === */}
+              {/* === MAIN ACTION BUTTONS — RIGHT AFTER IMAGE === */}
               {selectedImage && (
-                <div className="mt-6 space-y-4 animate-slideUp">
+                <div className="mt-5 space-y-3 animate-slideUp">
 
-                  {/* Big Detect Button — Always visible */}
+                  {/* Big Detect Button */}
                   <button
                     onClick={() => loadImageAndDetect(selectedImage)}
                     disabled={isDetecting}
@@ -286,7 +274,7 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
                     )}
                   </button>
 
-                  {/* Big Extract All Button — Visible when items detected */}
+                  {/* Big Extract All Button */}
                   {detectedItems.length > 0 && detectedItems.some(it => it.status === 'idle') && (
                     <button
                       onClick={handleAutoExtractAll}
@@ -296,16 +284,15 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
                       ✂️ Tách tất cả ({detectedItems.filter(it => it.status === 'idle').length} món)
                     </button>
                   )}
+                </div>
+              )}
 
-                  {/* Detected Items List */}
-                  {(detectedItems.length > 0 || isDetecting) && (
-                    <div>
-                      <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">
-                        Phát hiện: {detectedItems.length} vật thể
-                      </label>
-                    </div>
-                  )}
-
+              {/* Detected Items List */}
+              {(detectedItems.length > 0 || isDetecting) && (
+                <div className="mt-5">
+                  <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3">
+                    Phát hiện: {detectedItems.length} vật thể
+                  </label>
                   <div className="space-y-2">
                     {isDetecting ? (
                       <div className="py-6 text-center">
@@ -341,6 +328,18 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
                   </div>
                 </div>
               )}
+
+              {/* Product Name — Moved to bottom, less priority */}
+              <div className="mt-5 pt-4 border-t border-gray-100 dark:border-white/[0.04]">
+                <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Tên sản phẩm (Tùy chọn)</label>
+                <input
+                  type="text"
+                  placeholder="VD: Áo sơ mi lụa..."
+                  value={productName}
+                  onChange={e => setProductName(e.target.value)}
+                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-2xl px-5 py-3 text-sm focus:border-emerald-500 outline-none transition-colors"
+                />
+              </div>
             </div>
           </div>
 
