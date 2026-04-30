@@ -37,7 +37,7 @@ export const VideoStudioView = ({ state, updateState, apiSettings }: { state: Ap
     try {
       const response = await fetch(clip.sourceImage);
       const blob = await response.blob();
-      const base64 = await fileToBase64(blob);
+      const base64 = await fileToBase64(new File([blob], "video_frame.jpg", { type: blob.type }));
       const result = await generateFashionVideo(base64, blob.type, apiSettings, {
         structuredPrompt: advancedSettings
       });

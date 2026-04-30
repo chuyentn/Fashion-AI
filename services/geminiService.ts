@@ -45,6 +45,7 @@ USE THE FOLLOWING SCHEMA:
 "meta": { "image_quality": "string", "image_type": "string" },
 "global_context": { "scene_description": "string", "lighting": { "source": "string", "direction": "string", "quality": "string", "color_temp": "string" } },
 "composition": { "camera_angle": "string", "framing": "string", "depth_of_field": "string" },
+"fashion_context": { "overall_style": "string", "model_demographics": "string", "garment_details": "string", "fabric_behavior": "string" },
 "objects": [ { "label": "string", "category": "string", "prominence": "Foreground/Background", "visual_attributes": { "color": "string", "texture": "string", "material": "string" }, "pose_or_orientation": "string" } ]
 }
 `;
@@ -89,8 +90,12 @@ const SUBTLE_VARIATIONS = {
 
 const getRandomItem = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-const getStyleVariation = (index: number): string => {
+const getStyleVariation = (index: number, hasPrompt: boolean): string => {
   const lighting = getRandomItem(SUBTLE_VARIATIONS.LIGHTING);
+
+  if (hasPrompt) {
+      return "PRIORITY: Creative Fusion. Apply user prompt for background/vibe while locking the pose.";
+  }
 
   // For the first shot, strictly enforce the reference
   if (index === 0) {
@@ -221,16 +226,25 @@ export const generateFashionShots = async (
      textInstruction = `TEXT OVERLAY TASK: Render text: "${overlayText}"\nLanguage: ${textLanguage}\n${typographyPrompt}\nEnsure text is stylish and does not obscure main product details.`;
   }
 
+  let modeInstruction = "";
+  if (userPrompt && userPrompt.trim().length > 0) {
+      modeInstruction = `CREATIVE FUSION MODE: The user has provided a custom creative prompt. You must strictly keep the model's pose and the new garment, but change the background and vibe according to this prompt: "${userPrompt}". Do NOT change the pose!`;
+  } else {
+      modeInstruction = `STRICT CLONE MODE: You must copy the Reference Pose, Composition, and Background pixel-perfectly (99%).`;
+  }
+
   const baseSystemInstructions = useAnalysisMode ? `
       Role: High-Fidelity Fashion AI (Nano Banana Pro).
       Task: Reconstruct the Reference Scene exactly, swapping the garment for the Product.
       RULES: Match Pose (99%), Anatomy, and Lighting exactly.
+      ${modeInstruction}
       ${poseInstruction}
       ${textInstruction}
   ` : `
       Role: Expert Fashion Photographer AI (Clone Mode).
       Task: Virtual Try-On / Style Transfer.
       RULES: Copy Reference Pose, Composition, and Background pixel-perfectly (99%).
+      ${modeInstruction}
       ${poseInstruction}
       ${textInstruction}
   `;
@@ -254,8 +268,10 @@ export const generateFashionShots = async (
     basePromptParts.push({ inlineData: { mimeType: product.mimeType, data: product.base64 } });
 
     for (let i = 0; i < count; i++) {
-        const variationText = getStyleVariation(i);
-        const finalParts = [...basePromptParts, { text: `${userPrompt || "Fashion photography."}\n${variationText}\nEnsure the final image looks exactly like the Reference Image but with the new product.` }];
+        const hasPrompt = !!(userPrompt && userPrompt.trim().length > 0);
+        const variationText = getStyleVariation(i, hasPrompt);
+        const customPrompt = hasPrompt ? `Creative Prompt: ${userPrompt}\n` : "";
+        const finalParts = [...basePromptParts, { text: `${customPrompt}${variationText}\nEnsure the final image looks exactly like the Reference Image but with the new product.` }];
 
         tasks.push(async () => {
             for(let attempt = 0; attempt < 5; attempt++) {

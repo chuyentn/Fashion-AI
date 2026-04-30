@@ -183,8 +183,25 @@ export const CreateShotView = ({ onBack, state, updateState, onGenerate, onOpenA
           <input type="file" ref={prodInputRef} onChange={(e) => handleFileChange(e, 'prod')} className="hidden" accept="image/*" multiple />
         </section>
 
+        {/* Section 3: Creative Prompt */}
+        <section className="animate-slideUp" style={{ animationDelay: '0.3s' }}>
+          <SectionHeader step={3} title="Sáng tạo không giới hạn" count={state.prompt ? 1 : 0} maxCount={1} icon="draw" colorClass="bg-purple-500/10 dark:bg-purple-500/20 text-purple-500 dark:text-purple-400"
+            buttons={<></>}
+          />
+          <div className="bg-white dark:bg-[#1a1025] p-6 rounded-[32px] border border-gray-200 dark:border-white/[0.08] shadow-sm dark:shadow-2xl">
+             <label className="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-3 px-1">Creative Prompt (Tùy chọn)</label>
+             <textarea 
+                value={state.prompt}
+                onChange={e => updateState({ prompt: e.target.value })}
+                className="input-studio w-full resize-none min-h-[100px]"
+                placeholder="VD: Chuyển bối cảnh sang đường phố Tokyo mùa thu, giữ nguyên tư thế người mẫu..."
+             />
+             <p className="text-[10px] text-gray-500 font-bold mt-3 px-1">* Bỏ trống để AI sao chép chính xác 100% bối cảnh từ ảnh mẫu.</p>
+          </div>
+        </section>
+
         {/* Advanced Settings Card */}
-        <div onClick={() => setShowSettings(true)} className="flex items-center justify-between p-6 rounded-[32px] bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.08] cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.06] hover:border-primary/30 transition-all duration-500 group animate-slideUp shadow-sm dark:shadow-none" style={{ animationDelay: '0.3s' }}>
+        <div onClick={() => setShowSettings(true)} className="flex items-center justify-between p-6 rounded-[32px] bg-white dark:bg-white/[0.03] border border-gray-200 dark:border-white/[0.08] cursor-pointer hover:bg-gray-50 dark:hover:bg-white/[0.06] hover:border-primary/30 transition-all duration-500 group animate-slideUp shadow-sm dark:shadow-none" style={{ animationDelay: '0.4s' }}>
            <div className="flex items-center gap-5">
              <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-sm dark:shadow-lg">
                <span className="material-symbols-outlined text-2xl">tune</span>
