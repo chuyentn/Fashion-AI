@@ -23,6 +23,7 @@ import { ImageLightbox } from './components/Common';
 import { AuthView } from './views/AuthView';
 import { DashboardView } from './views/DashboardView';
 import { ExtractGarmentView } from './views/ExtractGarmentView';
+import { ProductIntakeView } from './views/ProductIntakeView';
 import { CreateShotView } from './views/CreateShotView';
 import { LibraryView } from './views/LibraryView';
 import { VideoStudioView } from './views/VideoStudioView';
@@ -201,6 +202,8 @@ const App: React.FC = () => {
         return <DashboardView onStart={() => updateState({ view: 'CREATE' })} history={history} onOpenHistory={(item) => { setCurrentProject(item); setGeneratedImages(item.images.map(img => ({ ...img, isLoading: false }))); updateState({ view: 'RESULTS' }); }} userProfile={state.userProfile!} onNavigate={(v) => updateState({ view: v })} />;
       case 'CREATE':
         return <CreateShotView onBack={() => updateState({ view: 'HOME' })} state={state} updateState={updateState} onGenerate={handleGenerate} onOpenAdmin={() => updateState({ view: 'ADMIN_PANEL' })} apiSettings={apiSettings} setApiSettings={setApiSettings} />;
+      case 'INTAKE':
+        return <ProductIntakeView onBack={() => updateState({ view: 'HOME' })} apiSettings={apiSettings} />;
       case 'EXTRACT':
         return <ExtractGarmentView onBack={() => updateState({ view: 'HOME' })} userProfile={state.userProfile!} />;
       case 'LIBRARY':

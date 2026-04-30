@@ -24,9 +24,13 @@ export const VideoStudioView = ({ state, updateState, apiSettings }: { state: Ap
 
   const addClip = async (files: FileList | null) => {
     if (!files) return;
-    const newClips: VideoClip[] = await Promise.all(Array.from(files).map(async f => ({
+    const newClips: VideoClip[] = await Promise.all(Array.from(files).map(async (f, i) => ({
       id: Math.random().toString(36).substr(2, 9),
-      sourceImage: URL.createObjectURL(f),
+      sourceImageUrl: URL.createObjectURL(f),
+      sourceImageBase64: '',
+      sourceImageMimeType: f.type,
+      prompt: '',
+      order: clips.length + i,
       status: 'idle'
     })));
     setClips([...clips, ...newClips]);
@@ -35,7 +39,7 @@ export const VideoStudioView = ({ state, updateState, apiSettings }: { state: Ap
   const processClip = async (clip: VideoClip) => {
     setClips(prev => prev.map(c => c.id === clip.id ? { ...c, status: 'generating' } : c));
     try {
-      const response = await fetch(clip.sourceImage);
+      const response = await fetch(clip.sourceImageUrl);
       const blob = await response.blob();
       const base64 = await fileToBase64(new File([blob], "video_frame.jpg", { type: blob.type }));
       const result = await generateFashionVideo(base64, blob.type, apiSettings, {
@@ -197,7 +201,7 @@ export const VideoStudioView = ({ state, updateState, apiSettings }: { state: Ap
                     {clip.videoUrl ? (
                       <video src={clip.videoUrl} className="w-full h-full object-cover" autoPlay loop muted playsInline />
                     ) : (
-                      <img src={clip.sourceImage} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Source" />
+                      <img src={clip.sourceImageUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" alt="Source" />
                     )}
                     
                     {clip.status === 'generating' && (

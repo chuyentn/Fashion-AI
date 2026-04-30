@@ -431,3 +431,50 @@ export const fileToBase64 = (file: File): Promise<string> => {
     reader.onerror = error => reject(error);
   });
 };
+
+export const analyzeCampaignIntake = async (
+  url: string,
+  description: string,
+  images: ImageFile[],
+  apiSettings: any
+): Promise<any> => {
+  const model = GEMINI_MODELS.TEXT_FAST; 
+  
+  const systemPrompt = `
+Bạn là Product Intake AI & Veo Prompt Builder chuyên nghiệp cho affiliate thời trang.
+Nhiệm vụ:
+- Phân tích thông tin sản phẩm từ Link, Mô tả và các Ảnh tham chiếu.
+- Xuất dữ liệu dưới dạng JSON thuần túy (dùng format chuẩn được yêu cầu).
+- Output MONG MUỐN GỒM 3 PHẦN:
+  1. product_metadata: Các thông tin cơ bản về sản phẩm (title, category, price_segment, materials, colors, style_tags, audience, pain_points, selling_points, confidence).
+  2. banners: 3 concept (sale, editorial, emotional) gồm concept và cta.
+  3. veo_payload: Payload JSON cho Veo 3.1 video hook (thời lượng 8s, aspect_ratio 9:16). Cung cấp đầy đủ bối cảnh (context, setting) và âm thanh (trending_music_vibe, sound_effects).
+
+CHÚ Ý: URL trong references của veo_payload hãy để trống "".
+
+Schema bắt buộc:
+{
+  "product_metadata": { "title": "", "category": "", "price_segment": "", "materials": [], "colors": [], "style_tags": [], "audience": "", "pain_points": [], "selling_points": [], "confidence": 0.0 },
+  "banners": [ { "type": "sale", "concept": "", "cta": "" }, { "type": "editorial", "concept": "", "cta": "" }, { "type": "emotional", "concept": "", "cta": "" } ],
+  "veo_payload": { "shot_goal": "hook 8s 9:16 for affiliate fashion", "duration_sec": 8, "aspect_ratio": "9:16", "references": [ {"type": "product", "url": ""}, {"type": "outfit", "url": ""}, {"type": "model", "url": ""}, {"type": "background", "url": ""} ], "scene": { "setting": "", "context": "", "camera": "", "motion": "", "lighting": "", "product_focus": "" }, "audio": { "trending_music_vibe": "", "sound_effects": [] }, "overlay": { "headline": "", "cta": "" }, "negative_rules": [] }
+}
+`;
+
+  const parts: any[] = [{ text: systemPrompt }];
+  
+  let userText = `Link sản phẩm: ${url}\nMô tả: ${description}\n`;
+  parts.push({ text: userText });
+  
+  for (const img of images) {
+    parts.push({ inlineData: { mimeType: img.mimeType, data: img.base64 } });
+  }
+
+  const res = await callGeminiAPI(apiSettings.geminiKey, model, { parts }, { responseMimeType: 'application/json' }, apiSettings);
+  
+  const text = res.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    throw new Error("Lỗi parse JSON từ AI.");
+  }
+};

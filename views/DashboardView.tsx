@@ -61,11 +61,12 @@ export const DashboardView = ({ onStart, history, onOpenHistory, userProfile, on
         </section>
 
         {/* Quick Access Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
                 { id: 'CREATE', title: t('dashboard.quickAction.create'), desc: t('dashboard.quickAction.createDesc'), icon: 'auto_awesome', color: 'from-primary/20 to-primary/5', iconColor: 'text-primary' },
                 { id: 'EXTRACT', title: t('dashboard.quickAction.extract'), desc: t('dashboard.quickAction.extractDesc'), icon: 'checkroom', color: 'from-emerald-500/20 to-emerald-500/5', iconColor: 'text-emerald-500 dark:text-emerald-400' },
-                { id: 'VIDEO', title: t('dashboard.quickAction.video'), desc: t('dashboard.quickAction.videoDesc'), icon: 'movie', color: 'from-pink-500/20 to-pink-500/5', iconColor: 'text-pink-500 dark:text-pink-400' }
+                { id: 'VIDEO', title: t('dashboard.quickAction.video'), desc: t('dashboard.quickAction.videoDesc'), icon: 'movie', color: 'from-pink-500/20 to-pink-500/5', iconColor: 'text-pink-500 dark:text-pink-400' },
+                { id: 'INTAKE', title: 'Product Intake', desc: 'Phân tích & trích xuất data (Affiliate)', icon: 'insights', color: 'from-orange-500/20 to-orange-500/5', iconColor: 'text-orange-500 dark:text-orange-400' }
             ].map((card, idx) => (
                 <div 
                     key={card.id} 

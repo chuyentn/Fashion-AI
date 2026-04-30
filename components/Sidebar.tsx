@@ -27,6 +27,7 @@ export const Sidebar = ({ activeView, onNavigate, userProfile }: SidebarProps) =
     { id: 'CREATE', label: t('menu.create'), icon: 'auto_awesome' },
     { id: 'EXTRACT', label: t('menu.extract'), icon: 'content_cut' },
     { id: 'VIDEO', label: t('menu.video'), icon: 'movie' },
+    { id: 'INTAKE', label: 'Product Intake', icon: 'insights' },
     { id: 'LIBRARY', label: t('menu.library'), icon: 'collections' },
     ...(userProfile?.isAdmin ? [{ id: 'ADMIN_PANEL', label: t('menu.admin'), icon: 'shield_person' }] : []),
     { id: 'SETTINGS', label: t('menu.settings'), icon: 'settings' },

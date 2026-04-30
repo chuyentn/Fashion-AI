@@ -60,6 +60,49 @@ export interface HistoryItem {
 
 export type FaceHideType = 'PHONE_SELFIE' | 'BACK_TURNED' | 'CROP_FACE' | 'PROP_OBSCURED';
 
+export interface ProductIntakeResult {
+  product_metadata: {
+    title: string;
+    category: string;
+    price_segment: string;
+    materials: string[];
+    colors: string[];
+    style_tags: string[];
+    audience: string;
+    pain_points: string[];
+    selling_points: string[];
+    confidence: number;
+  };
+  banners: {
+    type: 'sale' | 'editorial' | 'emotional';
+    concept: string;
+    cta: string;
+  }[];
+  veo_payload: {
+    shot_goal: string;
+    duration_sec: number;
+    aspect_ratio: string;
+    references: { type: string; url: string }[];
+    scene: {
+      setting: string;
+      context: string;
+      camera: string;
+      motion: string;
+      lighting: string;
+      product_focus: string;
+    };
+    audio: {
+      trending_music_vibe: string;
+      sound_effects: string[];
+    };
+    overlay: {
+      headline: string;
+      cta: string;
+    };
+    negative_rules: string[];
+  };
+}
+
 export interface UserProfile {
   id?: string;
   name: string;
@@ -69,7 +112,7 @@ export interface UserProfile {
 }
 
 export interface AppState {
-  view: 'AUTH' | 'HOME' | 'CREATE' | 'GENERATING' | 'RESULTS' | 'LIBRARY' | 'SETTINGS' | 'ADMIN_PANEL' | 'EXTRACT' | 'VIDEO';
+  view: 'AUTH' | 'HOME' | 'CREATE' | 'GENERATING' | 'RESULTS' | 'LIBRARY' | 'SETTINGS' | 'ADMIN_PANEL' | 'EXTRACT' | 'VIDEO' | 'INTAKE';
   previousView?: 'HOME' | 'CREATE' | 'LIBRARY';
   theme: 'light' | 'dark'; 
   referenceImages: ImageFile[]; 
