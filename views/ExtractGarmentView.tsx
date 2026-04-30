@@ -101,9 +101,11 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
     if (!selectedImage) return;
     const item = detectedItems[index];
 
-    const newItems = [...detectedItems];
-    newItems[index] = { ...newItems[index], status: 'loading' };
-    setDetectedItems(newItems);
+    setDetectedItems(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], status: 'loading' };
+      return updated;
+    });
 
     try {
       const result = await extractClothingItem(selectedImage, item.label, item.description, apiSettings);
@@ -114,9 +116,22 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
           updated[index] = { ...updated[index], status: 'done' };
           return updated;
         });
+      } else {
+        // API returned null (e.g., 429 quota, model error)
+        alert(`Không thể tách "${item.label}". API có thể bị giới hạn quota. Vui lòng thử lại sau.`);
+        setDetectedItems(prev => {
+          const updated = [...prev];
+          updated[index] = { ...updated[index], status: 'idle' };
+          return updated;
+        });
       }
-    } catch (err) {
-      alert(`Lỗi tách ${item.label}`);
+    } catch (err: any) {
+      const errMsg = err?.message || '';
+      if (errMsg.includes('RESOURCE_EXHAUSTED') || errMsg.includes('429')) {
+        alert(`Hết quota API. Vui lòng đợi vài phút rồi thử lại.`);
+      } else {
+        alert(`Lỗi tách "${item.label}": ${errMsg || 'Không rõ nguyên nhân'}`);
+      }
       setDetectedItems(prev => {
         const updated = [...prev];
         updated[index] = { ...updated[index], status: 'idle' };
@@ -127,8 +142,12 @@ export const ExtractGarmentView = ({ onBack, userProfile, state, updateState }: 
 
   const handleAutoExtractAll = async () => {
     for (let i = 0; i < detectedItems.length; i++) {
-      if (detectedItems[i].status === 'idle') {
+      // Re-read from latest state to avoid stale closure
+      const currentItems = detectedItems;
+      if (currentItems[i]?.status === 'idle') {
         await handleExtractItem(i);
+        // Small delay between API calls to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
   };
