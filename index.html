@@ -337,11 +337,6 @@ footer .f-copy{font-size:10px;color:var(--muted);letter-spacing:1px}
   }
 })();
 
-// === YouTube Embed ===
-var YT_VIDEO_ID = '%VITE_YOUTUBE_VIDEO_ID%';
-if (!YT_VIDEO_ID || YT_VIDEO_ID.indexOf('VITE_') !== -1) YT_VIDEO_ID = 'dQw4w9WgXcQ';
-document.getElementById('yt-demo').src = 'https://www.youtube.com/embed/' + YT_VIDEO_ID + '?rel=0&modestbranding=1';
-
 // === Language Toggle ===
 let currentLang = localStorage.getItem('lp-lang') || 'vi';
 function setLang(lang) {
@@ -352,6 +347,14 @@ function setLang(lang) {
   document.documentElement.lang = lang;
 }
 setLang(currentLang);
+window.setLang = setLang; // export to global for onclick
+</script>
+
+<!-- YouTube Embed Module -->
+<script type="module">
+  let YT_VIDEO_ID = import.meta.env.VITE_YOUTUBE_VIDEO_ID;
+  if (!YT_VIDEO_ID) YT_VIDEO_ID = 'dQw4w9WgXcQ';
+  document.getElementById('yt-demo').src = 'https://www.youtube.com/embed/' + YT_VIDEO_ID + '?rel=0&modestbranding=1';
 </script>
 </body>
 </html>
