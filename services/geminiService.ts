@@ -541,3 +541,109 @@ export const urlToBase64 = async (url: string): Promise<{ base64: string, mimeTy
   });
   return { base64, mimeType: blob.type };
 };
+
+export const detectClothingItems = async (
+  image: ImageFile,
+  apiSettings: ApiSettings
+): Promise<{ label: string, description: string }[]> => {
+  const model = GEMINI_MODELS.FLASH;
+  const { geminiKey: apiKey } = apiSettings;
+
+  const prompt = `
+    Analyze the image and detect ALL visible clothing items, accessories, and distinct elements (Model, Background).
+    Return a JSON array of objects with "label" (name of item) and "description" (visual details like color, fabric, shape).
+    Focus on: Dress, Shirt, Pants, Shoes, Bags, Jewelry, Model, Background, Flat-lay.
+  `;
+
+  const parts = [
+    { text: prompt },
+    { inlineData: { mimeType: image.mimeType, data: image.base64 } }
+  ];
+
+  try {
+    const res = await callGeminiAPI(apiKey, model, { parts }, { responseMimeType: 'application/json' }, apiSettings);
+    const text = res.candidates?.[0]?.content?.parts?.[0]?.text || "[]";
+    return JSON.parse(text);
+  } catch (e) {
+    console.error("Detection failed", e);
+    return [];
+  }
+};
+
+export const extractClothingItem = async (
+  image: ImageFile,
+  itemLabel: string,
+  itemDescription: string,
+  apiSettings: ApiSettings
+): Promise<GeneratedImage | null> => {
+  const model = GEMINI_MODELS.IMAGE_PRO;
+  const { geminiKey: apiKey } = apiSettings;
+
+  const prompt = `
+    Analyze the attached image in extreme detail and extract the following item: "${itemLabel}" (${itemDescription}).
+
+    TASK: Isolate this item completely and recreate it as a standalone studio-quality product image.
+    
+    For this "${itemLabel}":
+    - Isolate it completely from the original subject and background.
+    - Recreate it as a standalone product image.
+    - Preserve exact color, fabric texture, stitching, seams, folds, logos (if any), material thickness, proportions, and structural details.
+    - Maintain accurate scale and garment construction.
+    - Do not redesign or reinterpret the item.
+
+    REQUIREMENTS:
+    - Fully visible
+    - Properly shaped as it would appear naturally laid flat or positioned cleanly
+    - Free of distortion
+    - Photorealistic
+    - High resolution
+    - Studio-quality product photography
+
+    BACKGROUND:
+    Pure solid white background (#FFFFFF).
+    No shadows unless soft natural grounding shadow directly beneath the item.
+    No reflections.
+    No gradients.
+    No environmental elements.
+
+    LIGHTING:
+    Soft studio lighting.
+    Even exposure.
+    No dramatic shadows.
+    Accurate color reproduction.
+    True-to-life material rendering.
+
+    STRICT RULES:
+    - Do NOT include the model or body parts.
+    - Separate each item individually.
+    - Maintain 99% visual accuracy compared to the original image.
+    - Do NOT stylize.
+    - No CGI look.
+    - No artistic reinterpretation.
+    - No texture smoothing.
+
+    NEGATIVE PROMPT:
+    blurry, distorted shape, warped fabric, incorrect color, missing details, artificial shine, over-smoothing, CGI, illustration, cartoon, rendering artifacts, merged objects, incomplete garment, cut-off edges.
+  `;
+
+  const parts = [
+    { text: prompt },
+    { inlineData: { mimeType: image.mimeType, data: image.base64 } }
+  ];
+
+  try {
+    const res = await callGeminiAPI(apiKey, model, { parts }, { imageConfig: { aspectRatio: '3:4' } }, apiSettings);
+    const part = res.candidates?.[0]?.content?.parts?.find((p: any) => p.inlineData);
+    if (part) {
+      return {
+        id: `extracted-${Date.now()}`,
+        url: `data:image/png;base64,${part.inlineData.data}`,
+        isLoading: false,
+        label: itemLabel
+      };
+    }
+  } catch (e) {
+    console.error("Extraction failed", e);
+  }
+  return null;
+};
