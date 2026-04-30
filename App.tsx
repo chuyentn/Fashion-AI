@@ -47,6 +47,7 @@ const App: React.FC = () => {
     faceHideType: 'PHONE_SELFIE',
     intakeHistory: JSON.parse(localStorage.getItem('intakeHistory') || '[]'),
     pendingVeoPayload: null,
+    pendingProductImage: null,
   });
 
   const [apiSettings, setApiSettings] = useState<ApiSettings>(loadApiSettings());
@@ -211,7 +212,7 @@ const App: React.FC = () => {
       case 'INTAKE':
         return <ProductIntakeView state={state} updateState={updateState} onBack={() => updateState({ view: 'HOME' })} apiSettings={apiSettings} />;
       case 'EXTRACT':
-        return <ExtractGarmentView onBack={() => updateState({ view: 'HOME' })} userProfile={state.userProfile!} />;
+        return <ExtractGarmentView onBack={() => updateState({ view: 'HOME' })} userProfile={state.userProfile!} state={state} updateState={updateState} />;
       case 'LIBRARY':
         return <LibraryView userProfile={state.userProfile} history={history} onOpenHistory={(item) => { setCurrentProject(item); setGeneratedImages(item.images.map(img => ({ ...img, isLoading: false }))); updateState({ view: 'RESULTS' }); }} onViewImage={setZoomImage} onOpenAdmin={() => updateState({ view: 'ADMIN_PANEL' })} />;
       case 'VIDEO':

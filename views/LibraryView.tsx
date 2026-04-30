@@ -87,6 +87,44 @@ export const LibraryView = ({ userProfile, history, onOpenHistory, onViewImage, 
         <ResourceGrid items={models} title={t('library.models')} emptyMsg={t('library.modelsEmpty')} icon="face" colorClass="bg-primary/10 dark:bg-primary/20 text-primary border border-primary/20 dark:border-primary/30" animationDelay="0.1s" />
         <ResourceGrid items={products} title={t('library.products')} emptyMsg={t('library.productsEmpty')} icon="inventory_2" colorClass="bg-pink-500/10 dark:bg-pink-500/20 text-pink-500 dark:text-pink-400 border border-pink-500/20 dark:border-pink-500/30" animationDelay="0.2s" />
 
+        {/* Extracted Items Section */}
+        {(() => {
+          const extractedProjects = history.filter(h => (h.settings as any)?.type === 'EXTRACTION');
+          if (extractedProjects.length === 0) return null;
+          return (
+            <section className="space-y-6 animate-slideUp" style={{ animationDelay: '0.25s' }}>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/20 text-emerald-500 border border-emerald-500/20 dark:border-emerald-500/30 flex items-center justify-center shadow-lg">
+                  <span className="material-symbols-outlined text-2xl">content_cut</span>
+                </div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight flex items-center gap-3">
+                  Ảnh Đã Tách <span className="text-[10px] font-black text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/10 px-3 py-1 rounded-xl border border-gray-200 dark:border-white/10">{extractedProjects.length}</span>
+                </h3>
+              </div>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-6">
+                {extractedProjects.map(item => (
+                  item.images.map((img, idx) => (
+                    <div key={`${item.id}-${idx}`} className="group cursor-pointer space-y-3" onClick={() => onViewImage(img.url)}>
+                      <div className="aspect-[3/4] rounded-[24px] overflow-hidden border border-gray-200 dark:border-white/[0.06] relative bg-white dark:bg-[#1a1025] shadow-sm dark:shadow-xl group-hover:shadow-[0_0_30px_rgba(16,185,129,0.15)] dark:group-hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] group-hover:border-emerald-500/40 group-hover:-translate-y-2 transition-all duration-500">
+                        <img src={img.url} className="w-full h-full object-contain p-2 group-hover:scale-110 transition-transform duration-700" alt={item.prompt} />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
+                          <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-xl border border-white/30 flex items-center justify-center group-hover:scale-110 transition-transform shadow-xl dark:shadow-2xl text-white">
+                            <span className="material-symbols-outlined text-2xl">zoom_in</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="px-2">
+                        <p className="text-[11px] font-black text-gray-700 dark:text-gray-300 truncate uppercase tracking-widest group-hover:text-emerald-500 transition-colors">{item.prompt?.replace('Extracted: ', '') || 'Extracted'}</p>
+                        <p className="text-[9px] text-gray-500 dark:text-gray-600 font-bold uppercase mt-1 tracking-[2px]">{new Date(item.timestamp).toLocaleDateString('vi-VN')}</p>
+                      </div>
+                    </div>
+                  ))
+                ))}
+              </div>
+            </section>
+          );
+        })()}
+
         <section className="space-y-10 pt-16 border-t border-gray-200 dark:border-white/[0.06] animate-slideUp" style={{ animationDelay: '0.3s' }}>
            <div className="flex items-center justify-between">
                 <div className="flex items-center gap-4">

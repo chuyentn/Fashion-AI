@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Header } from '../components/Common';
 import { ResourcePickerModal } from '../modals/LibraryModals';
 import { AppState, ImageFile, AdminResource, ModelTier, FaceHideType } from '../types';
@@ -16,6 +16,16 @@ export const CreateShotView = ({ onBack, state, updateState, onGenerate, onOpenA
   const [isAddingRef, setIsAddingRef] = useState(false);
   const [isAddingProd, setIsAddingProd] = useState(false);
   const { t } = useTranslation();
+
+  // Auto-fill product image from Extract module
+  useEffect(() => {
+    if (state.pendingProductImage) {
+      updateState({
+        productImages: [...state.productImages, state.pendingProductImage],
+        pendingProductImage: null
+      });
+    }
+  }, [state.pendingProductImage]);
   
   const processFiles = async (fileList: File[], type: 'ref' | 'prod') => {
     const processed = await Promise.all(fileList.map(async (file) => {
